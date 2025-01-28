@@ -1,0 +1,34 @@
+<div class="bg-light border-end vh-100" style="width: 250px;">
+    <div class="p-2">
+        <h5 class="text-primary">{{ project.title }}</h5>
+    </div>
+    <div class="p-1" id="toggle-planning-menu" style="cursor: pointer;">
+        <i class="bi-arrow-down-short fs-4 custom-icon" id="toggle-planning-icon"></i> Planning
+    </div>
+    <ul class="nav flex-column px-2" id="nav-planning-menu">
+        <li class="nav-item">
+            <a class="nav-link text-dark" href="#"><i class="bi bi-pie-chart"></i> Summary</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" href="{{ path('dashboard_index', {key: project.key}) }}"><i class="bi bi-kanban"></i> Board</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" href="#"><i class="bi bi-view-list"></i> Issues</a>
+        </li>
+    </ul>
+    <hr>
+    <div class="p-1" id="toggle-settings-menu" style="cursor: pointer;">
+        <i class="bi-arrow-down-short fs-4 custom-icon" id="toggle-settings-icon"></i> Settings
+    </div>
+    <ul class="nav flex-column px-2" id="nav-settings-menu">
+        <li class="nav-item">
+            <a class="nav-link text-dark" href="#"><i class="bi bi-gear"></i> Details</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" href="#"><i class="bi bi-diagram-3"></i> Workflows</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link text-dark" href="#"><i class="bi bi-people"></i> Access</a>
+        </li>
+    </ul>
+</div>

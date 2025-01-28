@@ -1,0 +1,25 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+    <div class="d-flex">
+        {% include 'dashboard/components/sidebar.html.twig' %}
+
+        <div class="flex-grow-1 p-4">
+            {% block content %}{% endblock %}
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $("#toggle-planning-menu").click(function () {
+                $("#nav-planning-menu").toggle();
+                $("#toggle-planning-icon").toggleClass("bi-arrow-right-short bi-arrow-down-short");
+            });
+
+            $("#toggle-settings-menu").click(function () {
+                $("#nav-settings-menu").toggle();
+                $("#toggle-settings-icon").toggleClass("bi-arrow-right-short bi-arrow-down-short");
+            });
+        });
+    </script>
+{% endblock %}

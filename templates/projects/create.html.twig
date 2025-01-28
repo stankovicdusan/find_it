@@ -1,0 +1,110 @@
+{% extends "base.html.twig" %}
+
+{% block body %}
+
+<div id="toast-container" class="position-fixed top-0 end-0 p-3">
+    <div id="toast" class="toast align-items-center text-white bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="d-flex">
+            <div class="toast-body"></div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    </div>
+</div>
+
+<div class="wizard">
+    <div class="step-indicator">
+        <div class="step active" data-step="1">1. Template</div>
+        <div class="step" data-step="2">2. Details</div>
+        <div class="step" data-step="3">3. Review and confirm</div>
+    </div>
+
+    <form id="wizard-form" action="{{ path('project_create') }}" method="POST">
+        <div class="step-content active" data-step="1">
+            <div class="page-description">
+                <p>Choose a project template from the list below to get started.</p>
+                <p>Once selected, you’ll be guided through additional steps to set up and manage your project.</p>
+            </div>
+
+            <input type="hidden" name="templateId" class="project-template"/>
+
+            {% for template in templates %}
+                <div class="card mb-3 project-card d-flex align-items-center pe-auto">
+                    <div class="row g-0 align-items-center w-100">
+                        <div class="col-md-3">
+                            <img src="{{ asset('images/' ~ template.imagePath) }}" class="img-fluid image-type rounded-start" alt="{{ template.title }}" data-type="{{ template.title }}" data-id="{{ template.id }}">
+                        </div>
+
+                        <div class="col-md-9">
+                            <div class="card-body d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="card-title">{{ template.title }}</h5>
+                                    <p class="card-text">{{ template.description }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="step-content" data-step="2">
+            <div class="page-description">
+                <p>Explore what's possible when you collaborate with your team.</p>
+                <p>Edit project details anytime in project settings.</p>
+            </div>
+
+            <div class="d-flex justify-content-center align-items-center">
+                <div class="col-9">
+                    <div class="col-12 mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control name" name="title" placeholder="Try a team name, project goal, milestone...">
+                        <small class="form-error text-danger name-error"></small>
+                    </div>
+
+                    <div class="col-6 mb-3">
+                        <label for="key" class="form-label">Key<i class="form-icon-helper fas fa-info-circle" title="Key is unique to each project"></i></label>
+                        <input type="text" class="form-control key" name="key" data-validate-url="{{ path('project_key_validation') }}">
+                        <small class="form-error text-danger key-error"></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="step-content" data-step="3">
+            <div class="page-description">
+                <p>Review the details of your project setup and selected template.</p>
+                <p>Make sure everything looks good before proceeding. Once confirmed, your project will be created and ready for collaboration.</p>
+            </div>
+
+            <div class="review-section">
+                <div class="review-card">
+                    <h3>Selected Template</h3>
+                    <div class="template-summary">
+                        <div class="template-icon">
+                            <img />
+                        </div>
+                        <div class="template-details">
+                            <p></p>
+                        </div>
+                    </div>
+
+                    <div class="review-card">
+                        <h3>Project Details</h3>
+                        <ul class="details-list">
+                            <li class="project-name"><strong>Name: </strong><span></span></li>
+                            <li class="project-key"><strong>Key: </strong><span></span></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="wizard-buttons">
+            <button type="button" class="btn prev">Previous</button>
+            <button type="button" class="btn next">Next</button>
+            <button type="submit" class="btn finish">Finish</button>
+        </div>
+    </form>
+</div>
+
+{% endblock %}
