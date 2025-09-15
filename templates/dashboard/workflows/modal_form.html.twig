@@ -1,0 +1,32 @@
+{{ form_start(form) }}
+    <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title">{{ title }}</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+    </div>
+    <div class="modal-body">
+        <div class="mb-4">
+            <div class="mb-3">
+                {{ form_label(form.title) }}
+                {{ form_widget(form.title) }}
+            </div>
+            <div class="mb-3">
+            {{ form_widget(form.isInitial) }}
+                {{ form_label(form.isInitial) }}
+                
+            </div>
+            <div class="mb-3">
+                {{ form_label(form.transitions) }}
+                {% for child in form.transitions %}
+                    <div class="form-check">
+                        {{ form_widget(child) }}
+                        {{ form_label(child, null, { 'label_attr': { 'class': 'form-check-label' } }) }}
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <button type="submit" class="btn btn-primary">Save</button>
+    </div>
+{{ form_end(form) }}

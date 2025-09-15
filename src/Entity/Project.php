@@ -9,6 +9,7 @@ use App\Entity\Traits\Timestampable;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use App\EventListener\OnCreate\ProjectWorkflowListener;
 
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
 #[ORM\Table(name: "projects")]
@@ -27,21 +28,17 @@ class Project
     #[ORM\JoinColumn(nullable: false)]
     private ProjectTemplate $template;
 
-    #[ORM\OneToMany(targetEntity: ProjectStatus::class, mappedBy: 'project')]
-    private Collection $projectStatuses;
-
-    #[ORM\OneToMany(targetEntity: Ticket::class, mappedBy: 'project')]
-    private Collection $tickets;
+    #[ORM\OneToOne(inversedBy: 'project', cascade: ['persist', 'remove'])]
+    private ?Workflow $workflow = null;
 
     public function __construct()
     {
-        $this->projectStatuses = new ArrayCollection();
-        $this->tickets         = new ArrayCollection();
+        $this->tickets = new ArrayCollection();
     }
 
     public function getTitle(): string
     {
-        return $this->title;
+        return ucfirst(strtolower($this->title));
     }
 
     public function setTitle(string $title): void
@@ -69,19 +66,13 @@ class Project
         $this->template = $template;
     }
 
-    /**
-     * @return Collection<int, ProjectStatus>
-     */
-    public function getProjectStatuses(): Collection
+    public function getWorkflow(): ?Workflow
     {
-        return $this->projectStatuses;
+        return $this->workflow;
     }
 
-    /**
-     * @return Collection<int, Ticket>
-     */
-    public function getTickets(): Collection
+    public function setWorkflow(?Workflow $workflow): void
     {
-        return $this->tickets;
+        $this->workflow = $workflow;
     }
 }

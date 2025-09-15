@@ -11,6 +11,7 @@ class ProjectService
 {
     public function __construct(
         private readonly EntityManagerInterface $em,
+        private readonly WorkflowService $workflowService,
     ) {    
     }
 
@@ -31,6 +32,8 @@ class ProjectService
 
         $this->em->persist($project);
         $this->em->flush();
+
+        $this->workflowService->createDefaultWorkflow($project);
 
         return $project;
     }

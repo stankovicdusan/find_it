@@ -2,14 +2,16 @@
 
 namespace App\Entity;
 
+use App\Repository\TicketRepository;
 use App\Enum\PriorityEnum;
+use App\Enum\IssueTypeEnum;
 use App\Entity\Traits\Uniqueable;
 use App\Entity\Traits\Blameable;
 use App\Entity\Traits\Timestampable;
 use App\Entity\Traits\Deleteable;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity]
+#[ORM\Entity(repositoryClass: TicketRepository::class)]
 #[ORM\Table(name: "tickets")]
 #[ORM\HasLifecycleCallbacks]
 class Ticket
@@ -23,17 +25,21 @@ class Ticket
     private string $description;
 
     #[ORM\Column(name: 'index_number')]
-    private string $indexNumber;
+    private int $indexNumber;
 
     #[ORM\Column(type: 'string', enumType: PriorityEnum::class)]
-    private string $priority;
+    private PriorityEnum $priority;
 
     #[ORM\Column(name: '`order`')]
     private int $order;
 
-    #[ORM\ManyToOne(targetEntity: Project::class, inversedBy: 'tickets')]
+    #[ORM\ManyToOne(targetEntity: WorkflowStatus::class, inversedBy: 'tickets')]
     #[ORM\JoinColumn(nullable: false)]
-    private Project $project;
+    private WorkflowStatus $status;
+
+    #[ORM\ManyToOne(targetEntity: IssueType::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private IssueType $issueType;
 
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'assigned_to_id', referencedColumnName: 'id')]
@@ -64,22 +70,22 @@ class Ticket
         $this->description = $description;
     }
 
-    public function getIndexNumber(): string
+    public function getIndexNumber(): int
     {
         return $this->indexNumber;
     }
 
-    public function setIndexNumber(string $indexNumber): void
+    public function setIndexNumber(int $indexNumber): void
     {
         $this->indexNumber = $indexNumber;
     }
 
-    public function getPriority(): string
+    public function getPriority(): PriorityEnum 
     {
         return $this->priority;
     }
 
-    public function setPriority(string $priority): void
+    public function setPriority(PriorityEnum $priority): void
     {
         $this->priority = $priority;
     }
@@ -104,6 +110,26 @@ class Ticket
         $this->project = $project;
     }
 
+    public function getStatus(): WorkflowStatus
+    {
+        return $this->status;
+    }
+
+    public function setStatus(WorkflowStatus $status): void
+    {
+        $this->status = $status;
+    }
+
+    public function setIssueType(IssueType $issueType): void
+    {
+        $this->issueType = $issueType;
+    }
+
+    public function getIssueType(): IssueType
+    {
+        return $this->issueType;
+    }
+
     public function getAssignedTo(): ?User
     {
         return $this->assignedTo;
@@ -112,5 +138,32 @@ class Ticket
     public function setAssignedTo(User $user): void
     {
         $this->user = $user;
+    }
+
+    public function getColor(): string
+    {
+        if (IssueTypeEnum::BUG->value === $this->getIssueType()->getTitle()) {
+            return "#dc3545";
+        } else {
+            return "#0d6efd";
+        }
+    }
+
+    public function getAssignedToName(): string
+    {
+        if (null === $this->getAssignedTo()) {
+            return 'Unassigned';
+        } else {
+            return $this->getAssignedTo()->getFullName();
+        }
+    }
+
+    public function getPriorityBadge(): string
+    {
+        return match ($this->getPriority()) {
+            PriorityEnum::LOW => 'bg-secondary',
+            PriorityEnum::MEDIUM => 'bg-warning text-dark',
+            PriorityEnum::HIGH => 'bg-danger',
+        };
     }
 }

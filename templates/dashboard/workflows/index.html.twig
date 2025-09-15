@@ -1,0 +1,180 @@
+{% extends "dashboard/index.html.twig" %}
+{% set workflow = project.workflow %}
+
+{% block javascripts %}
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <script src="{{ asset('js/workflows.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+    {{ parent() }}
+
+    <div class="container">
+        <div class="header">
+            <h2>{{ workflow.title }}</h2>
+            <button type="button" class="btn btn-primary open-modal" data-url="{{ path('workflow_status_form', { key: project.key }) }}">
+                + Add Status
+            </button>
+        </div>
+
+        <div class="row fw-bold py-2 border-bottom text-muted">
+            <div class="col-3">Status</div>
+            <div class="col-2">Transitions</div>
+            <div class="col-2">Tickets</div>
+            <div class="col-2">Attributes</div>
+            <div class="col-1 text-end">Action</div>
+        </div>
+
+        {% for status in project.workflow.statuses %}
+            {% include 'dashboard/workflows/status_row.html.twig' %}
+        {% endfor %}
+    </div>
+
+    <div class="modal fade" id="workflowModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" id="workflowModalContent">
+                <div class="modal-body text-center p-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            new Sortable(document.getElementById('status-list'), {
+                animation: 150,
+                onEnd: function () {
+                    const statusIds = [...document.querySelectorAll('#status-list [data-status-id]')]
+                        .map(el => el.dataset.statusId);
+
+                    fetch('{{ path('admin_workflow_sort_order_update', {id: project.id}) }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest',
+                        },
+                        body: JSON.stringify({ order: statusIds }),
+                    }).then(res => {
+                        if (!res.ok) alert("Failed to update order.");
+                    });
+                }
+            });
+        });
+    </script> #}
+
+    <script>
+    $(function () {
+        // Open modal via AJAX (already close to what you had)
+        $(document).on('click', '.open-modal', function () {
+            const url = $(this).data('url');
+            const $modal = $('#workflowModal');
+            const $content = $('#workflowModalContent');
+
+            $content.html(`
+                <div class="modal-body text-center p-5">
+                    <div class="spinner-border text-primary" role="status"></div>
+                </div>
+            `);
+
+            $modal.modal('show');
+
+            $.get(url)
+            .done(function (html) {
+                $content.html(html);
+            })
+            .fail(function () {
+                $content.html('<div class="p-4 text-danger">Failed to load form.</div>');
+            });
+        });
+
+        // Submit modal form via AJAX
+        $('#workflowModal').on('submit', 'form', function (e) {
+            e.preventDefault();
+            const $form = $(this);
+
+            $.ajax({
+                url: $form.attr('action'),
+                method: 'POST',
+                data: $form.serialize()
+            })
+            .done(function (resp) {
+                if (!resp || !resp.success) {
+                    // fallback: reload
+                    location.reload();
+                    return;
+                }
+
+                const id = resp.id;
+                const html = resp.row_html;
+                const isNew = !!resp.is_new;
+
+                const $existing = $('.status-row[data-status-id="' + id + '"]');
+
+                if ($existing.length) {
+                    // Replace existing row
+                    $existing.replaceWith(html);
+                    highlightRow(id);
+                } else {
+                    // Insert new row after header or at the end of the list
+                    // Find the last .status-row and append after it
+                    const $all = $('.status-row');
+                    if ($all.length) {
+                    $all.last().after(html);
+                    } else {
+                    // If no rows yet, insert after the header row
+                    $('.row.fw-bold').after(html);
+                    }
+                    highlightRow(id);
+                }
+
+                $('#workflowModal').modal('hide');
+            })
+            .fail(function (xhr) {
+                // Re-render the modal with server-side validation errors
+                $('#workflowModalContent').html(xhr.responseText);
+            });
+        });
+
+        function highlightRow(id) {
+            const $row = $('.status-row[data-status-id="' + id + '"]');
+            $row.addClass('flash-save');
+
+            setTimeout(function () {
+                $row.removeClass('flash-save');
+            }, 1200);
+        }
+    });
+
+    $(function () {
+        $(document).on('click', '.js-delete-status', function () {
+            const $btn = $(this);
+            const url = $btn.data('url');
+            const token = $btn.data('token');
+            const $row = $btn.closest('.status-row');
+
+            if (!confirm('Delete this status? This cannot be undone.')) {
+            return;
+            }
+
+            $.post(url, { _token: token })
+            .done(function (resp) {
+                if (!resp || !resp.success) {
+                alert(resp?.message || 'Delete failed.');
+                return;
+                }
+                // Red flash then slide away and remove
+                $row.addClass('flash-delete');
+                setTimeout(function () {
+                $row.slideUp(250, function () { $(this).remove(); });
+                }, 600); // matches CSS animation duration
+            })
+            .fail(function (xhr) {
+                const msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Delete failed.';
+                alert(msg);
+            });
+        });
+    });
+</script>
+
+{% endblock %}
