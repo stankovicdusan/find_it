@@ -2,12 +2,10 @@
 
 namespace App\Validator;
 
-use App\Entity\Project;
 use App\Model\Dto\CreateProjectDto;
 use App\Service\ProjectService;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
-use Symfony\Component\Validator\Exception\UnexpectedTypeException;
 
 class ProjectValidator extends ConstraintValidator
 {

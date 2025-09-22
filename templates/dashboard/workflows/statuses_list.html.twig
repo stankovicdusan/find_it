@@ -1,0 +1,40 @@
+{% for status in statuses %}
+    <div class="row align-items-center py-2 border-bottom status-row" data-status-id="{{ status.id }}">
+        <div class="col-3">
+            <strong>{{ status.title }}</strong>
+        </div>
+
+        <div class="col-2">
+        <span class="badge bg-warning text-dark">
+            {{ status.transitions|length }} transitions
+        </span>
+        </div>
+
+        <div class="col-2">
+        <span class="badge bg-info">
+            {{ status.tickets|length }} tickets
+        </span>
+        </div>
+
+        <div class="col-2">
+            {% if status.isInitial %}
+                <span class="badge bg-success">Initial</span>
+            {% endif %}
+        </div>
+
+        <div class="col-1 text-end d-flex gap-2">
+            <button class="btn btn-sm btn-primary flex-fill open-modal"
+                    data-url="{{ path('workflow_status_form', { key: project.key, status: status.id }) }}">
+                Edit
+            </button>
+            {% set minReached = statuses|length <= 2 %}
+            <button type="button"
+                    class="btn btn-sm btn-danger flex-fill js-delete-status {{ minReached ? 'btn-disabled' : '' }}"
+                    aria-disabled="{{ minReached ? 'true' : 'false' }}"
+                    data-url="{{ path('workflow_status_delete', { key: project.key, status: status.id }) }}"
+                    title="{{ minReached ? 'At least 2 statuses required' : '' }}">
+                Delete
+            </button>
+        </div>
+    </div>
+{% endfor %}

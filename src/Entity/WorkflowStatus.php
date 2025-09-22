@@ -8,10 +8,12 @@ use App\Entity\Traits\Timestampable;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use App\Validator as MainAssert;
 
 #[ORM\Entity(repositoryClass: WorkflowStatusRepository::class)]
 #[ORM\Table(name: "workflow_statuses")]
 #[ORM\HasLifecycleCallbacks]
+#[MainAssert\WorkflowStatus]
 class WorkflowStatus
 {
     use Uniqueable, Timestampable;
@@ -31,10 +33,10 @@ class WorkflowStatus
     #[ORM\ManyToOne(targetEntity: Workflow::class, inversedBy: 'statuses')]
     private ?Workflow $workflow = null;
 
-    #[ORM\OneToMany(targetEntity: Ticket::class, mappedBy: 'status')]
+    #[ORM\OneToMany(targetEntity: Ticket::class, mappedBy: 'status', cascade: ['remove'])]
     private Collection $tickets;
 
-    #[ORM\OneToMany(targetEntity: WorkflowTransition::class, mappedBy: 'fromStatus')]
+    #[ORM\OneToMany(targetEntity: WorkflowTransition::class, mappedBy: 'fromStatus', cascade: ['persist', 'remove'], orphanRemoval: true)]
     private Collection $transitions;
 
     public function __construct()

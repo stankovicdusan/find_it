@@ -12,9 +12,6 @@
         <li class="nav-item">
             <a class="nav-link {% if 'board' == activeMenu %}text-primary{% else %}text-dark{% endif %}" href="{{ path('dashboard_index', {key: project.key}) }}"><i class="bi bi-kanban"></i> Board</a>
         </li>
-        <li class="nav-item">
-            <a class="nav-link text-dark" href="#"><i class="bi bi-view-list"></i> Issues</a>
-        </li>
     </ul>
     <hr>
     <div class="p-1" id="toggle-settings-menu" style="cursor: pointer;">
@@ -22,10 +19,7 @@
     </div>
     <ul class="nav flex-column px-2" id="nav-settings-menu">
         <li class="nav-item">
-            <a class="nav-link text-dark" href="#"><i class="bi bi-gear"></i> Details</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link {% if 'workflows' == activeMenu %}text-primary{% else %}text-dark{% endif %}" href="{{ path('dashboard_workflow_index', {key: project.key}) }}"><i class="bi bi-diagram-3"></i> Workflows</a>
+            <a class="nav-link {% if 'workflows' == activeMenu %}text-primary{% else %}text-dark{% endif %}" href="{{ path('workflow_status_index', {key: project.key}) }}"><i class="bi bi-diagram-3"></i> Workflows</a>
         </li>
         <li class="nav-item">
             <a class="nav-link text-dark" href="#"><i class="bi bi-people"></i> Access</a>

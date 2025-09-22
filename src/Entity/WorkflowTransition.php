@@ -13,12 +13,12 @@ class WorkflowTransition
 {
     use Uniqueable, Timestampable;
 
-    #[ORM\ManyToOne(targetEntity: WorkflowStatus::class, inversedBy: 'transitions')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: WorkflowStatus::class, cascade: ['persist'], inversedBy: 'transitions')]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private WorkflowStatus $fromStatus;
 
-    #[ORM\ManyToOne(targetEntity: WorkflowStatus::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(targetEntity: WorkflowStatus::class, cascade: ['persist'])]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private WorkflowStatus $toStatus;
 
     public function setFromStatus(WorkflowStatus $fromStatus): void

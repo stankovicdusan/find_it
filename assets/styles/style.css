@@ -489,4 +489,9 @@
   }
 }
 
+.btn-disabled {
+    opacity: .65;
+    cursor: not-allowed;
+}
+
 /*# sourceMappingURL=style.css.map */

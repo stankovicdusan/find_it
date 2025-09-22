@@ -46,3 +46,8 @@ $main-color: #0056b3;
     70%  { background-color: #fff0f0; }
     100% { background-color: transparent; }
 }
+
+.btn-disabled {
+    opacity: .65;
+    cursor: not-allowed;
+}

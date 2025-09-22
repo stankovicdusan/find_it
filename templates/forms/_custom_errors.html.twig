@@ -1,0 +1,9 @@
+{% block form_errors %}
+    {% if errors|length %}
+        <div class="text-danger small">
+            {% for error in errors %}
+                {{ error.message }}{% if not loop.last %}<br>{% endif %}
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}

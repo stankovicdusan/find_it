@@ -27,8 +27,6 @@ class WorkflowService
             $status->setWorkflow($workflow);
             $status->setIsInitial(DefaultWorkflowStatusEnum::BACKLOG === $statusEnum);
 
-            $status->setColor($statusEnum->color());
-
             $this->em->persist($status);
 
             $statuses[] = $status;

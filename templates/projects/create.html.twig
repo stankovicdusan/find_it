@@ -1,5 +1,9 @@
 {% extends "base.html.twig" %}
 
+{% block javascripts %}
+    <script type="application/javascript" src="{{ asset('js/projects.js') }}"></script>
+{% endblock %}
+
 {% block body %}
 
 <div id="toast-container" class="position-fixed top-0 end-0 p-3">
