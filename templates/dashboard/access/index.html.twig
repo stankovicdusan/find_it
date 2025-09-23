@@ -1,0 +1,68 @@
+{% extends "dashboard/index.html.twig" %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/access.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+    {{ parent() }}
+
+    <div class="container my-4" id="accessPage"
+         data-list-url="{{ path('dashboard_access_list', { key: project.key }) }}"
+         data-invite-url="{{ path('dashboard_access_invite', { key: project.key }) }}">
+
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="mb-0">Access — {{ project.title }}</h3>
+            <div class="d-flex gap-2">
+                <input id="memberSearch" class="form-control" type="text" placeholder="Search people…">
+                <button id="inviteOpen" class="btn btn-primary">Invite</button>
+            </div>
+        </div>
+
+        <div id="inviteBox" class="card mb-3 d-none">
+            <div class="card-body">
+                <form id="inviteForm" method="post">
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-6">
+                            <label class="form-label">Email</label>
+                            <input name="email" type="email" class="form-control" required>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Role</label>
+                            <select name="role" class="form-select">
+                                <option value="MEMBER">Member</option>
+                                <option value="ADMIN">Admin</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="hidden" name="_token" value="{{ csrf_token('invite_member_' ~ project.id) }}">
+                            <button class="btn btn-success w-100" type="submit">Send invite</button>
+                        </div>
+                    </div>
+                    <div id="inviteError" class="text-danger small mt-2 d-none"></div>
+                </form>
+            </div>
+        </div>
+
+        <div id="membersTable">
+            <div class="p-4 text-center text-muted">Loading…</div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="removeMemberModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Remove member</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">Remove <span id="rmName"></span> from this project?</div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button id="confirmRemoveBtn" class="btn btn-danger">Remove</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

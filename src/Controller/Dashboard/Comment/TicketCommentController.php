@@ -2,16 +2,16 @@
 
 namespace App\Controller\Dashboard\Comment;
 
+use App\Controller\BaseController;
 use App\Entity\Ticket;
 use App\Entity\TicketComment;
 use App\Form\Type\TicketCommentType;
 use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
 
-class TicketCommentController extends AbstractController
+class TicketCommentController extends BaseController
 {
     #[Route('/ticket/{id}/comment', name: 'ticket_comment_create', methods: ['POST'])]
     public function commentCreate(

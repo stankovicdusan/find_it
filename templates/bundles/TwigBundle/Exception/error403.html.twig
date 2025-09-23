@@ -1,0 +1,8 @@
+{% extends 'base.html.twig' %}
+{% block body %}
+    <div class="container py-5 text-center">
+        <h1 class="display-6">403 — Forbidden</h1>
+        <p class="text-muted">You don’t have permission to access this page.</p>
+        <a href="{{ path('projects_index') }}" class="btn btn-primary">Back to Projects</a>
+    </div>
+{% endblock %}

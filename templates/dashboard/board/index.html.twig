@@ -1,6 +1,7 @@
 {% extends "dashboard/index.html.twig" %}
 
 {% block javascripts %}
+    {{ parent() }}
     <link  rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
 
@@ -15,7 +16,7 @@
 
     <div class="container">
         <div class="header">
-            <h2>{{ project.title }} Board</h2>
+            <h3 class="mb-0">Board — {{ project.title }}</h3>
             <div class="search-group">
                 <form id="boardSearchForm" class="d-flex gap-2" autocomplete="off">
                     <input id="boardSearch" type="text" class="form-control" placeholder="Search tickets...">

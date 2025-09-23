@@ -1,42 +1,85 @@
 {% extends "base.html.twig" %}
+{% set isProjectsEmpty = projects is empty %}
 
 {% block javascripts %}
+    {{ parent() }}
     <script src="{{ asset('js/projects.js') }}"></script>
 {% endblock %}
 
 {% block body %}
-    <div class="row mt-5">
-        <div class="col-12">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <h4 class="mb-0">Projects</h4>
-                <a href="{{ path('project_new') }}" class="btn btn-primary text-white">
-                    <img class="button-icon" src="{{ asset('images/icons/plus-lg.svg') }}"/> Create project
-                </a>
-            </div>
-            <table class="mt-3 table table-borderless">
-                <thead>
-                    <tr>
-                        <th scope="col">Name</th>
-                        <th scope="col">Key</th>
-                        <th scope="col">Lead</th>
-                        <th scope="col" class="text-end">More actions</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for project in projects %}
-                        <tr>
-                            <td>{{ project.title }}</td>
-                            <td>{{ project.key }}</td>
-                            <td>{{ project.createdBy.fullName }}</td>
-                            <td class="text-end">
-                                <a href="{{ path('dashboard_index', {key: project.key}) }}" class="btn btn-success">
-                                    Access dashboard
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-12 col-lg-10 col-xl-10">
+
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <div>
+                        <h3 class="mb-0">Projects</h3>
+                        <div class="text-muted small">Overview of projects you can access</div>
+                    </div>
+                    {% if not isProjectsEmpty %}
+                        <a href="{{ path('project_new') }}" class="btn btn-primary">
+                            <img class="button-icon me-1" src="{{ asset('images/icons/plus-lg.svg') }}" alt="" />
+                            Create project
+                        </a>
+                    {% endif %}
+                </div>
+
+                <div id="projectsTableWrap">
+                    {% if isProjectsEmpty %}
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body text-center py-5">
+                                <div class="mb-3">
+                                    <i class="bi bi-folder fs-1 text-secondary" aria-hidden="true"></i>
+                                </div>
+                                <h5 class="mb-2">No projects yet</h5>
+                                <p class="text-muted mb-4">
+                                    You don’t have access to any projects. Create a new one to get started.
+                                </p>
+                                <a href="{{ path('project_new') }}" class="btn btn-primary">
+                                    <img class="button-icon me-1" src="{{ asset('images/icons/plus-lg.svg') }}" alt=""/>
+                                    Create project
                                 </a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+                            </div>
+                        </div>
+                    {% else %}
+                        <div class="card shadow-sm border-0">
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle mb-0">
+                                        <thead class="bg-light">
+                                        <tr>
+                                            <th scope="col">Name</th>
+                                            <th scope="col">Key</th>
+                                            <th scope="col">Lead</th>
+                                            <th scope="col" class="text-end">Actions</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        {% for project in projects %}
+                                            <tr>
+                                                <td class="fw-semibold">{{ project.title }}</td>
+                                                <td>
+                                                    <span class="badge text-bg-secondary">{{ project.key }}</span>
+                                                </td>
+                                                <td>
+                                                    {{ project.createdBy ? project.createdBy.fullName : '—' }}
+                                                </td>
+                                                <td class="text-end">
+                                                    <a href="{{ path('dashboard_index', { key: project.key }) }}"
+                                                       class="btn btn-sm btn-success">
+                                                        Access dashboard
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
 {% endblock %}

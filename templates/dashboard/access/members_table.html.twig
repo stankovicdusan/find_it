@@ -1,0 +1,49 @@
+<table class="table align-middle">
+    <thead>
+        <tr>
+            <th>Person</th>
+            <th>Email</th>
+            <th>Role</th>
+            <th class="text-end">Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for member in members %}
+            {% set isSelf = app.user and member.user and (member.user.id == app.user.id) %}
+            <tr class="member-row" data-id="{{ member.id }}"
+                data-role-url="{{ path('dashboard_access_role', { key: project.key, member: member.id }) }}"
+                data-remove-url="{{ path('dashboard_access_remove', { key: project.key, member: member.id }) }}"
+                data-token="{{ csrf_token('member_action_' ~ member.id) }}"
+            >
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <div>
+                            <div class="fw-semibold">{{ member.user ? member.user.fullName : 'Invited user' }}</div>
+                            <div class="small text-muted">{{ member.status.value == 'INVITED' ? 'Invited (pending)' : 'Active' }}</div>
+                        </div>
+                    </div>
+                </td>
+                <td>{{ member.email }}</td>
+
+                <td style="max-width: 160px">
+                    {% if isSelf %}
+                        {{ member.role.value == 'MEMBER' ? 'Member' : 'Admin' }}
+                    {% else %}
+                        <select class="form-select form-select-sm js-role-select">
+                            <option value="MEMBER" {{ member.role.value == 'MEMBER' ? 'selected' }}>Member</option>
+                            <option value="ADMIN"  {{ member.role.value == 'ADMIN'  ? 'selected' }}>Admin</option>
+                        </select>
+                    {% endif %}
+                </td>
+
+                <td class="text-end">
+                    {% if not isSelf %}
+                        <button class="btn btn-sm btn-outline-danger js-remove-member">Remove</button>
+                    {% endif %}
+                </td>
+            </tr>
+        {% else %}
+            <tr><td colspan="4" class="text-muted p-4">No members yet.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>

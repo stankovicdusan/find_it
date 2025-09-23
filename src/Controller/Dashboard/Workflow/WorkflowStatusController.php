@@ -12,7 +12,7 @@ use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[IsGranted('IS_AUTHENTICATED_FULLY')]
+#[IsGranted('PROJECT_ADMIN', subject: 'project')]
 #[Route('/dashboard/{key}/workflows', name: 'workflow_status_')]
 class WorkflowStatusController extends BaseController
 {

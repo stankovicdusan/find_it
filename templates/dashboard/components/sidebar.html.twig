@@ -13,16 +13,18 @@
             <a class="nav-link {% if 'board' == activeMenu %}text-primary{% else %}text-dark{% endif %}" href="{{ path('dashboard_index', {key: project.key}) }}"><i class="bi bi-kanban"></i> Board</a>
         </li>
     </ul>
-    <hr>
-    <div class="p-1" id="toggle-settings-menu" style="cursor: pointer;">
-        <i class="bi-arrow-down-short fs-4 custom-icon" id="toggle-settings-icon"></i> Settings
-    </div>
-    <ul class="nav flex-column px-2" id="nav-settings-menu">
-        <li class="nav-item">
-            <a class="nav-link {% if 'workflows' == activeMenu %}text-primary{% else %}text-dark{% endif %}" href="{{ path('workflow_status_index', {key: project.key}) }}"><i class="bi bi-diagram-3"></i> Workflows</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link text-dark" href="#"><i class="bi bi-people"></i> Access</a>
-        </li>
-    </ul>
+    {% if is_granted('PROJECT_ADMIN', project) %}
+        <hr>
+        <div class="p-1" id="toggle-settings-menu" style="cursor: pointer;">
+            <i class="bi-arrow-down-short fs-4 custom-icon" id="toggle-settings-icon"></i> Settings
+        </div>
+        <ul class="nav flex-column px-2" id="nav-settings-menu">
+            <li class="nav-item">
+                <a class="nav-link {% if 'workflows' == activeMenu %}text-primary{% else %}text-dark{% endif %}" href="{{ path('workflow_status_index', {key: project.key}) }}"><i class="bi bi-diagram-3"></i> Workflows</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'access' == activeMenu %}text-primary{% else %}text-dark{% endif %}" href="{{ path('dashboard_access', {key: project.key}) }}"><i class="bi bi-people"></i> Access</a>
+            </li>
+        </ul>
+    {% endif %}
 </div>

@@ -20,7 +20,7 @@ class ProjectController extends BaseController
     #[Route(path: '', name: 'projects_index', methods: ["GET"])]
     public function index(EntityManagerInterface $em): Response
     {
-        $projects = $em->getRepository(Entity\Project::class)->findAll();
+        $projects = $em->getRepository(Entity\Project::class)->findForUser($this->getUser());
 
         return $this->render('projects/index.html.twig', [
             'projects' => $projects,

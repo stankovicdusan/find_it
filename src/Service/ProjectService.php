@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity;
+use App\Enum\ProjectRoleEnum;
 use App\Model\Dto\CreateProjectDto;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -34,6 +35,15 @@ class ProjectService
         $this->em->flush();
 
         $this->workflowService->createDefaultWorkflow($project);
+
+        $projectMember = new Entity\ProjectMember();
+        $projectMember->setProject($project);
+        $projectMember->setUser($user);
+        $projectMember->setEmail($user->getEmail());
+        $projectMember->setRole(ProjectRoleEnum::ADMIN);
+
+        $this->em->persist($projectMember);
+        $this->em->flush();
 
         return $project;
     }

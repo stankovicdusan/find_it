@@ -2,6 +2,7 @@
 {% set workflow = project.workflow %}
 
 {% block javascripts %}
+    {{ parent() }}
     <script src="{{ asset('js/workflows.js') }}"></script>
 {% endblock %}
 
@@ -10,7 +11,7 @@
 
     <div class="container">
         <div class="header">
-            <h2>{{ workflow.title }}</h2>
+            <h3 class="mb-0">Workflows — {{ project.title }}</h3>
             <button type="button" class="btn btn-primary open-modal" data-url="{{ path('workflow_status_form', { key: project.key }) }}">
                 + Add Status
             </button>

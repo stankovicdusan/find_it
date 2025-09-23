@@ -1,6 +1,7 @@
 {% extends "base.html.twig" %}
 
 {% block javascripts %}
+    {{ parent() }}
     <script type="application/javascript" src="{{ asset('js/projects.js') }}"></script>
 {% endblock %}
 

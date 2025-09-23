@@ -6,10 +6,9 @@ use App\Repository\ProjectRepository;
 use App\Entity\Traits\Uniqueable;
 use App\Entity\Traits\Blameable;
 use App\Entity\Traits\Timestampable;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
-use App\EventListener\OnCreate\ProjectWorkflowListener;
 
 #[ORM\Entity(repositoryClass: ProjectRepository::class)]
 #[ORM\Table(name: "projects")]
@@ -31,9 +30,12 @@ class Project
     #[ORM\OneToOne(inversedBy: 'project', cascade: ['persist', 'remove'])]
     private ?Workflow $workflow = null;
 
+    #[ORM\OneToMany(targetEntity: ProjectMember::class, mappedBy: 'project', cascade: ['remove'], orphanRemoval: true)]
+    private Collection $members;
+
     public function __construct()
     {
-        $this->tickets = new ArrayCollection();
+        $this->members = new ArrayCollection();
     }
 
     public function getTitle(): string
@@ -74,5 +76,13 @@ class Project
     public function setWorkflow(?Workflow $workflow): void
     {
         $this->workflow = $workflow;
+    }
+
+    /**
+     * @return ArrayCollection<int, ProjectMember>
+     */
+    public function getMembers(): ArrayCollection
+    {
+        return $this->members;
     }
 }
