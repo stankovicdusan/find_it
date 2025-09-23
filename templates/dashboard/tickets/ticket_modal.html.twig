@@ -23,12 +23,13 @@
 
     <hr>
 
-    <div class="comments-section">
-        <h6>Comments</h6>
-        <div class="mb-3">
-            <textarea class="form-control tinymce" name="comment" rows="3" placeholder="Write a comment..."></textarea>
-        </div>
-        <button class="btn btn-primary btn-sm">Post Comment</button>
+    <h6>Comments</h6>
+    <div id="ticketCommentForm">
+        {% include 'dashboard/tickets/comments/comment_form.html.twig' with { form: commentForm, ticket: ticket } %}
+    </div>
+    <hr>
+    <div id="ticketComments">
+        {% include 'dashboard/tickets/comments/comments_list.html.twig' with { ticket: ticket } %}
     </div>
 </div>
 

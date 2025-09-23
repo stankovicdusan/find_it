@@ -1,0 +1,46 @@
+<div class="modal-header bg-primary text-white">
+    <h5 class="modal-title">{{ project.title }} Board</h5>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+
+{{ form_start(form, {action: path('dashboard_ticket_create_submit', {key: project.key})}) }}
+<div class="modal-body">
+    <div class="mb-4">
+        <h4 class="mb-3">Create a New Ticket</h4>
+
+        <div class="mb-3">
+            {{ form_label(form.title) }}
+            {{ form_widget(form.title) }}
+            {{ form_errors(form.title) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(form.issueType) }}
+            {{ form_widget(form.issueType) }}
+            {{ form_errors(form.issueType) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(form.priority) }}
+            {{ form_widget(form.priority) }}
+            {{ form_errors(form.priority) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(form.description) }}
+            {{ form_widget(form.description) }}
+            {{ form_errors(form.description) }}
+        </div>
+        <div class="mb-3">
+            {{ form_label(form.assignedTo) }}
+            {{ form_widget(form.assignedTo) }}
+            {{ form_errors(form.assignedTo) }}
+        </div>
+
+        {% if form._token is defined %}
+            {{ form_widget(form._token) }}
+        {% endif %}
+    </div>
+</div>
+<div class="modal-footer">
+    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+    <button type="submit" class="btn btn-primary">Create</button>
+</div>
+{{ form_end(form, { render_rest: false }) }}

@@ -9,6 +9,8 @@ use App\Entity\Traits\Uniqueable;
 use App\Entity\Traits\Blameable;
 use App\Entity\Traits\Timestampable;
 use App\Entity\Traits\Deleteable;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: TicketRepository::class)]
@@ -44,6 +46,15 @@ class Ticket
     #[ORM\ManyToOne(targetEntity: User::class)]
     #[ORM\JoinColumn(name: 'assigned_to_id', referencedColumnName: 'id')]
     private ?User $assignedTo = null;
+
+    #[ORM\OneToMany(targetEntity: TicketComment::class, mappedBy: 'ticket', cascade: ['remove'], orphanRemoval: true)]
+    #[ORM\OrderBy(['createdAt' => 'DESC'])]
+    private Collection $comments;
+
+    public function __construct()
+    {
+        $this->comments = new ArrayCollection();
+    }
 
     public function getId(): int
     {
@@ -135,9 +146,17 @@ class Ticket
         return $this->assignedTo;
     }
 
-    public function setAssignedTo(User $user): void
+    public function setAssignedTo(User $assignedTo): void
     {
-        $this->user = $user;
+        $this->assignedTo = $assignedTo;
+    }
+
+    /**
+     * @return Collection<int, TicketComment>
+     */
+    public function getComments(): Collection
+    {
+        return $this->comments;
     }
 
     public function getColor(): string

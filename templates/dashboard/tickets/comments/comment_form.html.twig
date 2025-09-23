@@ -1,0 +1,8 @@
+{{ form_start(form, {action: path('ticket_comment_create', {id: ticket.id}), attr: { class: 'js-comment-form', novalidate: 'novalidate' } }) }}
+<div class="mb-2">
+    {{ form_widget(form.body) }}
+    {{ form_errors(form.body) }}
+</div>
+{% if form._token is defined %}{{ form_widget(form._token) }}{% endif %}
+<button class="btn btn-primary btn-sm" type="submit">Post Comment</button>
+{{ form_end(form, { render_rest: false }) }}

@@ -1,0 +1,13 @@
+{% for ticket in tickets %}
+    <div class="ticket-item px-2 pt-2">
+        <div class="card ticket-card js-open-ticket"
+             data-ticket-id="{{ ticket.id }}"
+             data-url="{{ path('dashboard_ticket_modal', { key: project.key, id: ticket.id }) }}"
+             style="border-left: 4px solid {{ ticket.color }};">
+            <p class="mb-1" style="padding-right: 5px;">{{ ticket.title }}</p>
+            <p class="project-key text-muted mb-0">{{ project.key }}-{{ ticket.indexNumber }}</p>
+        </div>
+    </div>
+{% else %}
+    <div class="text-muted px-3 py-2">No tickets.</div>
+{% endfor %}

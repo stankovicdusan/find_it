@@ -72,6 +72,7 @@ class TicketType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => Ticket::class,
+            'method'     => 'POST',
             'project'    => null,
         ]);
     }

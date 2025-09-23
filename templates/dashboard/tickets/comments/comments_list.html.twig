@@ -1,0 +1,19 @@
+<div class="comments-list">
+    {% for c in ticket.comments %}
+        <div class="border rounded p-2 mb-2">
+            <div class="d-flex justify-content-between">
+                <div class="small">
+                    <strong>
+                        {{ c.createdBy.fullName }}
+                    </strong>
+                    <span class="text-muted">• {{ c.createdAt|date('d.m.Y H:i') }}</span>
+                </div>
+            </div>
+            <div class="mt-1">
+                {{ c.body|raw }}
+            </div>
+        </div>
+    {% else %}
+        <div class="text-muted">No comments yet.</div>
+    {% endfor %}
+</div>
