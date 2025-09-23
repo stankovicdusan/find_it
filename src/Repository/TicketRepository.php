@@ -42,4 +42,20 @@ class TicketRepository extends ServiceEntityRepository
 
         return (int) $lastOrder + 1;
     }
+
+    public function searchByProjectAndTitle(Project $project, string $q): array
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->join('t.status', 's')
+            ->join('s.workflow', 'w')
+            ->join('w.project', 'p')
+            ->andWhere('p = :project')
+            ->setParameter('project', $project)
+            ->andWhere('LOWER(t.title) LIKE :q')
+            ->setParameter('q', '%' . mb_strtolower($q) . '%')
+            ->orderBy('s.sortOrder', 'ASC')
+            ->addOrderBy('t.id', 'ASC');
+
+        return $qb->getQuery()->getResult();
+    }
 }

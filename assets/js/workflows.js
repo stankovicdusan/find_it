@@ -1,7 +1,7 @@
 $(document).ready(function () {
     $(document).on('click', '.open-modal', function () {
         const url = $(this).data('url');
-        const modal = $('#workflowModal');
+        const $modal = $('#workflowModal');
         const content = $('#workflowModalContent');
 
         content.html(`
@@ -10,7 +10,7 @@ $(document).ready(function () {
             </div>
         `);
 
-        modal.modal('show');
+        $modal.modal('show');
 
         $.ajax({
             url: url,

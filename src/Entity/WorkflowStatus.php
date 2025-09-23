@@ -110,4 +110,17 @@ class WorkflowStatus
     {
         return $this->transitions;
     }
+
+    /**
+     * @return array<mixed>
+     */
+    public function getAllowedStatusToIds(): array
+    {
+        $transitions = [];
+        foreach ($this->getTransitions() as $transition) {
+            $transitions[] = $transition->getToStatus()->getId();
+        }
+
+        return $transitions;
+    }
 }

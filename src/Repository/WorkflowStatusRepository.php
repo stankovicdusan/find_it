@@ -59,4 +59,13 @@ class WorkflowStatusRepository extends ServiceEntityRepository
 
         return (bool) $qb->getQuery()->getOneOrNullResult();
     }
+
+    public function getMatchedStatuses(array $statusIds): array
+    {
+        return $this->createQueryBuilder('s')
+            ->andWhere('s.id IN (:ids)')
+            ->setParameter('ids', $statusIds)
+            ->orderBy('s.sortOrder', 'ASC')
+            ->getQuery()->getResult();
+    }
 }

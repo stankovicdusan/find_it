@@ -2,7 +2,6 @@
 {% set workflow = project.workflow %}
 
 {% block javascripts %}
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="{{ asset('js/workflows.js') }}"></script>
 {% endblock %}
 
@@ -57,29 +56,4 @@
             </div>
         </div>
     </div>
-
-
-    {# <script>
-        document.addEventListener('DOMContentLoaded', function () {
-            new Sortable(document.getElementById('status-list'), {
-                animation: 150,
-                onEnd: function () {
-                    const statusIds = [...document.querySelectorAll('#status-list [data-status-id]')]
-                        .map(el => el.dataset.statusId);
-
-                    fetch('{{ path('admin_workflow_sort_order_update', {id: project.id}) }}', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest',
-                        },
-                        body: JSON.stringify({ order: statusIds }),
-                    }).then(res => {
-                        if (!res.ok) alert("Failed to update order.");
-                    });
-                }
-            });
-        });
-    </script> #}
-
 {% endblock %}

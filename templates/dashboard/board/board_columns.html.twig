@@ -1,0 +1,29 @@
+{% if statuses is empty %}
+    <div class="p-4 text-muted">No matching tickets.</div>
+{% else %}
+    {% for status in statuses %}
+        {% set tickets = ticketsByStatus[status.id]|default([]) %}
+        <div class="column theme-purple">
+            <div class="column-header">
+                <h3>{{ status.title }}</h3>
+                <span class="badge">{{ tickets|length }}</span>
+            </div>
+            <div class="ticket-list"
+                 data-status-id="{{ status.id }}"
+                 data-allowed-to="{{ status.allowedStatusToIds|join(',') }}"
+                 data-move-url="{{ path('dashboard_ticket_move', { key: project.key }) }}">
+                {% for ticket in tickets %}
+                    <div class="ticket-item px-2 pt-2">
+                        <div class="card ticket-card js-open-ticket"
+                             data-ticket-id="{{ ticket.id }}"
+                             data-url="{{ path('dashboard_ticket_modal', { key: project.key, id: ticket.id }) }}"
+                             style="border-left: 4px solid {{ ticket.color }};">
+                            <p class="mb-1" style="padding-right: 5px;">{{ ticket.title }}</p>
+                            <p class="project-key text-muted mb-0">{{ project.key }}-{{ ticket.indexNumber }}</p>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    {% endfor %}
+{% endif %}

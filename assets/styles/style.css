@@ -494,4 +494,16 @@
     cursor: not-allowed;
 }
 
+.ticket-placeholder {
+    border: 2px dashed #bbb;
+    background: #f8f9fa;
+    height: 56px;
+    margin: .5rem;
+}
+
+.ticket-list {
+    min-height: 80px;
+    padding: 8px 4px 40px;
+}
+
 /*# sourceMappingURL=style.css.map */

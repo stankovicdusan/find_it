@@ -172,3 +172,15 @@
 .btn-secondary:hover {
     background-color: #5a6268;
 }
+
+.ticket-list {
+    min-height: 80px;
+    padding: 8px 4px 40px;
+}
+
+.ticket-placeholder {
+    border: 2px dashed #bbb;
+    height: 56px;
+    margin: .5rem;
+    background: #f8f9fa;
+}
