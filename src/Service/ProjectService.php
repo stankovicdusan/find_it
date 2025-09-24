@@ -36,13 +36,13 @@ class ProjectService
 
         $this->workflowService->createDefaultWorkflow($project);
 
-        $projectMember = new Entity\ProjectMember();
-        $projectMember->setProject($project);
-        $projectMember->setUser($user);
-        $projectMember->setEmail($user->getEmail());
-        $projectMember->setRole(ProjectRoleEnum::ADMIN);
+        $projectUser = new Entity\ProjectUser();
+        $projectUser->setProject($project);
+        $projectUser->setUser($user);
+        $projectUser->setEmail($user->getEmail());
+        $projectUser->setRole(ProjectRoleEnum::ADMIN);
 
-        $this->em->persist($projectMember);
+        $this->em->persist($projectUser);
         $this->em->flush();
 
         return $project;

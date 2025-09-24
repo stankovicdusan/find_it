@@ -10,8 +10,16 @@
             <a class="nav-link {% if 'summary' == activeMenu %}text-primary{% else %}text-dark{% endif %}" href="{{ path('dashboard_summary', {key: project.key}) }}"><i class="bi bi-pie-chart"></i> Summary</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link {% if 'board' == activeMenu %}text-primary{% else %}text-dark{% endif %}" href="{{ path('dashboard_index', {key: project.key}) }}"><i class="bi bi-kanban"></i> Board</a>
+            <a class="nav-link {% if 'board' == activeMenu %}text-primary{% else %}text-dark{% endif %}" href="{{ path('dashboard_index', {key: project.key}) }}"><i class="bi bi-{{ project.isScrumProject ? 'flag' : 'kanban' }}"></i> {{ project.boardName }}</a>
         </li>
+        {% if project.isScrumProject %}
+            <li class="nav-item">
+                <a class="nav-link {% if 'sprintBacklog' == activeMenu %}text-primary{% else %}text-dark{% endif %}" href="{{ path('dashboard_index', {key: project.key}) }}"><i class="bi bi-kanban"></i> Sprint Backlog</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'sprints' == activeMenu %}text-primary{% else %}text-dark{% endif %}" href="{{ path('dashboard_index', {key: project.key}) }}"><i class="bi bi-calendar-week"></i> Sprints</a>
+            </li>
+        {% endif %}
     </ul>
     {% if is_granted('PROJECT_ADMIN', project) %}
         <hr>

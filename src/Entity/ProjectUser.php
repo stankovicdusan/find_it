@@ -5,13 +5,13 @@ namespace App\Entity;
 use App\Entity\Traits\Uniqueable;
 use App\Enum\MemberStatusEnum;
 use App\Enum\ProjectRoleEnum;
-use App\Repository\ProjectMemberRepository;
+use App\Repository\ProjectUserRepository;
 use Doctrine\ORM\Mapping as ORM;
 
-#[ORM\Entity(repositoryClass: ProjectMemberRepository::class)]
-#[ORM\Table(name: 'project_members')]
+#[ORM\Entity(repositoryClass: ProjectUserRepository::class)]
+#[ORM\Table(name: 'project_users')]
 #[ORM\UniqueConstraint(columns: ['project_id', 'email'])]
-class ProjectMember
+class ProjectUser
 {
     use Uniqueable;
 

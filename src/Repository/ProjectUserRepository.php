@@ -3,18 +3,18 @@
 namespace App\Repository;
 
 use App\Entity\Project;
-use App\Entity\ProjectMember;
+use App\Entity\ProjectUser;
 use App\Entity\User;
 use App\Enum\MemberStatusEnum;
 use App\Enum\ProjectRoleEnum;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
-class ProjectMemberRepository extends ServiceEntityRepository
+class ProjectUserRepository extends ServiceEntityRepository
 {
     public function __construct(ManagerRegistry $registry)
     {
-        parent::__construct($registry, ProjectMember::class);
+        parent::__construct($registry, ProjectUser::class);
     }
 
     public function searchByProject(Project $p, string $q): array
@@ -78,7 +78,7 @@ class ProjectMemberRepository extends ServiceEntityRepository
             ->getQuery()->getResult();
     }
 
-    public function findOneByUserAndProject(User $user, Project $project): ?ProjectMember
+    public function findOneByUserAndProject(User $user, Project $project): ?ProjectUser
     {
         return $this->createQueryBuilder('pm')
             ->andWhere('pm.user = :user')

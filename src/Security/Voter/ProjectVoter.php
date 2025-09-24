@@ -4,11 +4,11 @@
 namespace App\Security\Voter;
 
 use App\Entity\Project;
-use App\Entity\ProjectMember;
+use App\Entity\ProjectUser;
 use App\Entity\User;
 use App\Enum\MemberStatusEnum;
 use App\Enum\ProjectRoleEnum;
-use App\Repository\ProjectMemberRepository;
+use App\Repository\ProjectUserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -32,7 +32,7 @@ final class ProjectVoter extends Voter
         $user = $token->getUser();
         if (!$user instanceof User) return false;
 
-        $pm = $this->em->getRepository(ProjectMember::class)->findOneByUserAndProject($user, $project);
+        $pm = $this->em->getRepository(ProjectUser::class)->findOneByUserAndProject($user, $project);
         if (!$pm || $pm->getStatus() !== MemberStatusEnum::ACTIVE) return false;
 
         return match ($attribute) {

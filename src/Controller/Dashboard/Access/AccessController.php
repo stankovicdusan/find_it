@@ -37,7 +37,7 @@ class AccessController extends BaseController
         EntityManagerInterface $em,
     ): Response {
         $q = trim((string) $request->query->get('q',''));
-        $members = $em->getRepository(Entity\ProjectMember::class)->searchByProject($project, $q);
+        $members = $em->getRepository(Entity\ProjectUser::class)->searchByProject($project, $q);
 
         return new Response(
             $this->renderView('dashboard/access/members_table.html.twig', [
@@ -65,14 +65,14 @@ class AccessController extends BaseController
             return new JsonResponse(['ok' => false, 'message' => 'Email required'], 422);
         }
 
-        if ($em->getRepository(Entity\ProjectMember::class)->memberExists($project, $email)) {
+        if ($em->getRepository(Entity\ProjectUser::class)->memberExists($project, $email)) {
             return new JsonResponse([
                 'ok' => false,
                 'message' => 'This email is already added.'
             ], 422);
         }
 
-        $pm = new Entity\ProjectMember();
+        $pm = new Entity\ProjectUser();
 
         $pm->setProject($project);
         $pm->setEmail($email);
@@ -90,7 +90,7 @@ class AccessController extends BaseController
 
         $html = $this->renderView('dashboard/access/members_table.html.twig', [
             'project' => $project,
-            'members' => $em->getRepository(Entity\ProjectMember::class)->searchByProject($project, ''),
+            'members' => $em->getRepository(Entity\ProjectUser::class)->searchByProject($project, ''),
         ]);
 
         return new JsonResponse([
@@ -103,7 +103,7 @@ class AccessController extends BaseController
     public function roles(
         Request $request,
         #[MapEntity(mapping: ['key' => 'key'])] Entity\Project $project,
-        Entity\ProjectMember $member,
+        Entity\ProjectUser $member,
         EntityManagerInterface $em,
     ): JsonResponse {
         if ($member->getProject()->getId() !== $project->getId()) {
@@ -120,7 +120,7 @@ class AccessController extends BaseController
             return new JsonResponse(['ok' => false], 422);
         }
 
-        if (ProjectRoleEnum::ADMIN === $member->getRole() && ProjectRoleEnum::MEMBER === $role && $em->getRepository(Entity\ProjectMember::class)->countAdmins($project) <= 1) {
+        if (ProjectRoleEnum::ADMIN === $member->getRole() && ProjectRoleEnum::MEMBER === $role && $em->getRepository(Entity\ProjectUser::class)->countAdmins($project) <= 1) {
             return new JsonResponse(['ok' => false, 'message' => 'At least one admin required'], 422);
         }
 
@@ -134,7 +134,7 @@ class AccessController extends BaseController
     public function remove(
         Request $request,
         #[MapEntity(mapping: ['key' => 'key'])] Entity\Project $project,
-        Entity\ProjectMember $member,
+        Entity\ProjectUser $member,
         EntityManagerInterface $em,
     ): JsonResponse {
         if ($member->getProject()->getId() !== $project->getId()) {
@@ -149,7 +149,7 @@ class AccessController extends BaseController
             return new JsonResponse(['ok' => false, 'message' => "You cannot remove yourself from this project."], 422);
         }
 
-        if (ProjectRoleEnum::ADMIN === $member->getRole() && $em->getRepository(Entity\ProjectMember::class)->countAdmins($project) <= 1) {
+        if (ProjectRoleEnum::ADMIN === $member->getRole() && $em->getRepository(Entity\ProjectUser::class)->countAdmins($project) <= 1) {
             return new JsonResponse(['ok' => false, 'message' => 'At least one admin required'], 422);
         }
 
@@ -158,7 +158,7 @@ class AccessController extends BaseController
 
         $html = $this->renderView('dashboard/access/members_table.html.twig', [
             'project' => $project,
-            'members' => $em->getRepository(Entity\ProjectMember::class)->searchByProject($project, ''),
+            'members' => $em->getRepository(Entity\ProjectUser::class)->searchByProject($project, ''),
         ]);
 
         return new JsonResponse(['ok' => true, 'html' => $html]);

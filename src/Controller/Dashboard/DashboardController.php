@@ -8,7 +8,6 @@ use App\Form\Type\TicketCommentType;
 use App\Form\Type\TicketType;
 use App\Service\BoardSearchService;
 use App\Service\TicketService;
-use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -16,7 +15,6 @@ use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
-use Twig\Environment;
 
 #[IsGranted('IS_AUTHENTICATED_FULLY')]
 #[Route('/dashboard/{key}', name: 'dashboard_')]
@@ -83,28 +81,23 @@ class DashboardController extends BaseController
     ): Response {
         $form = $this->createForm(TicketCommentType::class);
 
-        return new Response(
-            $this->renderView('dashboard/tickets/ticket_modal.html.twig', [
-                'project'     => $project,
-                'ticket'      => $ticket,
-                'commentForm' => $form->createView(),
-            ])
-        );
+        return $this->render('dashboard/tickets/ticket_modal.html.twig', [
+            'project'     => $project,
+            'ticket'      => $ticket,
+            'commentForm' => $form->createView(),
+        ]);
     }
 
     #[Route('/ticket/new', name: 'ticket_create_form', methods: ['GET'])]
     public function viewForm(
         #[MapEntity(mapping: ['key' => 'key'])] Entity\Project $project,
-        Environment $twig
     ): Response {
         $form = $this->createForm(TicketType::class);
 
-        return new Response(
-            $twig->render('dashboard/tickets/create_ticket_modal.html.twig', [
-                'project' => $project,
-                'form'    => $form->createView(),
-            ])
-        );
+        return $this->render('dashboard/tickets/create_ticket_modal.html.twig', [
+            'project' => $project,
+            'form'    => $form->createView(),
+        ]);
     }
 
     #[Route('/ticket/new', name: 'ticket_create_submit', methods: ['POST'])]
@@ -112,12 +105,11 @@ class DashboardController extends BaseController
         Request $request,
         #[MapEntity(mapping: ['key' => 'key'])] Entity\Project $project,
         EntityManagerInterface $em,
-        FormFactoryInterface $forms,
         TicketService $ticketService,
     ): JsonResponse {
         $ticket = new Entity\Ticket();
 
-        $form = $forms->create(TicketType::class, $ticket, [
+        $form = $this->createForm(TicketType::class, $ticket, [
             'action' => $this->generateUrl('dashboard_ticket_create_submit', ['key' => $project->getKey()]),
             'method' => 'POST',
         ])->handleRequest($request);

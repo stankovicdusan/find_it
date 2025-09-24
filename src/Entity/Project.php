@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use App\Enum\TemplateEnum;
 use App\Repository\ProjectRepository;
 use App\Entity\Traits\Uniqueable;
 use App\Entity\Traits\Blameable;
@@ -30,7 +31,7 @@ class Project
     #[ORM\OneToOne(inversedBy: 'project', cascade: ['persist', 'remove'])]
     private ?Workflow $workflow = null;
 
-    #[ORM\OneToMany(targetEntity: ProjectMember::class, mappedBy: 'project', cascade: ['remove'], orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: ProjectUser::class, mappedBy: 'project', cascade: ['remove'], orphanRemoval: true)]
     private Collection $members;
 
     public function __construct()
@@ -79,10 +80,24 @@ class Project
     }
 
     /**
-     * @return ArrayCollection<int, ProjectMember>
+     * @return ArrayCollection<int, ProjectUser>
      */
     public function getMembers(): ArrayCollection
     {
         return $this->members;
+    }
+
+    public function isScrumProject(): bool
+    {
+        return TemplateEnum::SCRUM->value === $this->getTemplate()->getId();
+    }
+
+    public function getBoardName(): string
+    {
+        if (TemplateEnum::KANBAN->value === $this->getTemplate()->getId()) {
+            return 'Kanban Board';
+        } else {
+            return 'Sprint Board';
+        }
     }
 }

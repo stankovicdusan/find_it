@@ -3,9 +3,9 @@
 namespace App\Controller\Project;
 
 use App\Controller\BaseController;
-use App\Entity\ProjectMember;
+use App\Entity\ProjectUser;
 use App\Enum\MemberStatusEnum;
-use App\Repository\ProjectMemberRepository;
+use App\Repository\ProjectUserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\{JsonResponse, Request, Response};
 use Symfony\Component\Routing\Attribute\Route;
@@ -20,7 +20,7 @@ class InviteController extends BaseController
         EntityManagerInterface $em,
     ): JsonResponse {
         $email = strtolower($this->getLoggedInUser()->getEmail());
-        $count = $em->getRepository(ProjectMember::class)->countPendingForEmail($email);
+        $count = $em->getRepository(ProjectUser::class)->countPendingForEmail($email);
 
         return new JsonResponse(['count' => $count]);
     }
@@ -30,7 +30,7 @@ class InviteController extends BaseController
         EntityManagerInterface $em,
     ): Response {
         $email = strtolower($this->getLoggedInUser()->getEmail());
-        $invites = $em->getRepository(ProjectMember::class)->findPendingForEmail($email);
+        $invites = $em->getRepository(ProjectUser::class)->findPendingForEmail($email);
 
         return $this->render('projects/invites_list.html.twig', [
             'invites' => $invites,
@@ -39,7 +39,7 @@ class InviteController extends BaseController
 
     #[Route('/accept/{id}', name: 'invite_accept', methods: ['POST'])]
     public function accept(
-        ProjectMember $pm,
+        ProjectUser $pm,
         Request $request,
         EntityManagerInterface $em,
     ): JsonResponse {
@@ -59,16 +59,16 @@ class InviteController extends BaseController
 
         $em->flush();
 
-        $invites = $em->getRepository(ProjectMember::class)->findPendingForEmail($email);
+        $invites = $em->getRepository(ProjectUser::class)->findPendingForEmail($email);
         $html = $this->renderView('projects/invites_list.html.twig', ['invites' => $invites]);
-        $count = $em->getRepository(ProjectMember::class)->countPendingForEmail($email);
+        $count = $em->getRepository(ProjectUser::class)->countPendingForEmail($email);
 
         return new JsonResponse(['ok' => true, 'html' => $html, 'count' => $count]);
     }
 
     #[Route('/decline/{id}', name: 'invite_decline', methods: ['POST'])]
     public function decline(
-        ProjectMember $pm,
+        ProjectUser $pm,
         Request $request,
         EntityManagerInterface $em,
     ): JsonResponse {
@@ -86,9 +86,9 @@ class InviteController extends BaseController
         $em->remove($pm);
         $em->flush();
 
-        $invites = $em->getRepository(ProjectMember::class)->findPendingForEmail($email);
+        $invites = $em->getRepository(ProjectUser::class)->findPendingForEmail($email);
         $html = $this->renderView('projects/invites_list.html.twig', ['invites' => $invites]);
-        $count = $em->getRepository(ProjectMember::class)->countPendingForEmail($email);
+        $count = $em->getRepository(ProjectUser::class)->countPendingForEmail($email);
 
         return new JsonResponse(['ok' => true, 'html' => $html, 'count' => $count]);
     }

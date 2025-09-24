@@ -1,34 +1,3 @@
-$(document).off('click.ticketModal', '.js-open-ticket').on('click.ticketModal', '.js-open-ticket', function (e) {
-    if ($('.ui-sortable-helper').length) return;
-
-    e.preventDefault();
-    const $card = $(this);
-    const url = $card.data('url');
-    const $modal = $('#ticketModal');
-    const $content = $('#ticketModalContent');
-
-    $content.html(`
-         <div class="modal-body text-center p-5">
-             <div class="spinner-border text-primary" role="status"></div>
-         </div>
-    `);
-
-    $modal.modal('show');
-
-    $.ajax({
-        url: url,
-        method: 'GET',
-        success: function (html) {
-            $content.html(html);
-
-            reloadTinymce();
-        },
-        error: function () {
-            $content.html('<div class="p-4 text-danger">Failed to load ticket.</div>');
-        }
-    });
-});
-
 function debounce(fn, ms) {
     let t;
     return (...args) => {
@@ -37,7 +6,7 @@ function debounce(fn, ms) {
     };
 }
 
-function initSearch() {
+function initSearch()   {
     const $grid = $('#boardGrid');
     const searchUrl = $grid.data('search-url');
 
@@ -49,20 +18,16 @@ function initSearch() {
 
     const runSearch = debounce(function () {
         const q = $('#boardSearch').val().trim();
-        $grid.css('opacity', .6); // mali vizuelni hint
+
         $.ajax({
             url: searchUrl,
             method: 'GET',
             data: {q},
-            headers: {'X-Requested-With': 'XMLHttpRequest'},
             success: function (html) {
                 render(html);
             },
             error: function () {
                 render('<div class="p-4 text-danger">Search failed.</div>');
-            },
-            complete: function () {
-                $grid.css('opacity', 1);
             }
         });
     }, 250);
@@ -192,4 +157,66 @@ $(document).ready(function () {
             }
         });
     });
+
+    (function () {
+        const $modal   = $('#ticketModal');
+        const $content = $('#ticketModalContent');
+
+        function setTicketParam(id) {
+            const u = new URL(location.href);
+            u.searchParams.set('ticket', id);
+            history.pushState({}, '', u);
+        }
+
+        function removeTicketParam() {
+            const u = new URL(location.href);
+            u.searchParams.delete('ticket');
+            history.replaceState({}, '', u);
+        }
+
+        function getTicketUrlById(id) {
+            const $card = $('.js-open-ticket[data-ticket-id="' + id + '"]');
+            if ($card.length) return $card.data('url');
+        }
+
+        function renderError() {
+            $content.html('<div class="p-4 text-danger">Failed to load ticket.</div>');
+        }
+
+        function loadAndShow(id, url, pushParamAfterSuccess = true) {
+            if (!url) return;
+
+            $modal.modal('show');
+
+            $.get(url)
+                .done(function (html) {
+                    $content.html(html);
+                    if (typeof reloadTinymce === 'function') reloadTinymce();
+                    if (pushParamAfterSuccess) setTicketParam(id);
+                })
+                .fail(renderError);
+        }
+
+        function openTicketById(id) {
+            loadAndShow(id, getTicketUrlById(id));
+        }
+
+        $(document)
+            .off('click.ticketModal', '.js-open-ticket')
+            .on('click.ticketModal', '.js-open-ticket', function (e) {
+                if ($('.ui-sortable-helper').length) return;
+                e.preventDefault();
+
+                const id = String($(this).data('ticket-id'));
+                const url = $(this).data('url');
+                loadAndShow(id, url);
+            });
+
+        $(function () {
+            const id = new URL(location.href).searchParams.get('ticket');
+            if (id) openTicketById(id);
+        });
+
+        $modal.on('hidden.bs.modal', removeTicketParam);
+    })();
 });
