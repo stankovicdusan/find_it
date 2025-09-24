@@ -1,0 +1,101 @@
+{% extends "dashboard/index.html.twig" %}
+
+{% block javascripts %}
+    {{ parent() }}
+
+    <script>
+        window.SUMMARY_DATA = {
+            statusCounts: {{ statusCounts|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }},
+            typeCounts:   {{ typeCounts|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }},
+            workload:     {{ workload|json_encode(constant('JSON_UNESCAPED_UNICODE'))|raw }}
+        };
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+    <script src="{{ asset('js/summary.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+    {{ parent() }}
+
+    <div class="container-fluid py-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="mb-0">Summary — {{ project.title }}</h3>
+
+            <div class="dropdown">
+                <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button"
+                        data-bs-toggle="dropdown" aria-expanded="false">
+                    Last {{ days }} days
+                </button>
+                <ul class="dropdown-menu dropdown-menu-end">
+                    {% set options = [5, 7, 10, 14, 30] %}
+                    {% for d in options %}
+                        <li>
+                            <a class="dropdown-item {{ d == days ? 'active' : '' }}"
+                               href="{{ path('dashboard_summary', { key: project.key, days: d }) }}">
+                                Last {{ d }} days
+                            </a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+        <div class="row g-3">
+            <div class="col-12 col-lg-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">Total tickets</div>
+                        <div class="display-6">{{ kpis.total }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">Updated last {{ days }} days</div>
+                        <div class="display-6">{{ kpis.updatedN }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">Created last {{ days }} days</div>
+                        <div class="display-6">{{ kpis.createdN }}</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-12 col-lg-3">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-body">
+                        <div class="text-muted small">Unassigned</div>
+                        <div class="display-6">{{ kpis.unassigned }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-3 mt-1">
+            <div class="col-12 col-xl-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white fw-semibold">Status overview</div>
+                    <div class="card-body"><div id="chartStatus"></div></div>
+                </div>
+            </div>
+            <div class="col-12 col-xl-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white fw-semibold">Issue types</div>
+                    <div class="card-body"><div id="chartTypes"></div></div>
+                </div>
+            </div>
+            <div class="col-12 col-xl-4">
+                <div class="card shadow-sm border-0 h-100">
+                    <div class="card-header bg-white fw-semibold">Team workload</div>
+                    <div class="card-body"><div id="chartWorkload"></div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script></script>
+{% endblock %}

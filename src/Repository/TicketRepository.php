@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Ticket;
 use App\Entity\Project;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
+use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
 
 class TicketRepository extends ServiceEntityRepository
@@ -57,5 +58,41 @@ class TicketRepository extends ServiceEntityRepository
             ->addOrderBy('t.id', 'ASC');
 
         return $qb->getQuery()->getResult();
+    }
+
+    public function countUpdatedSince(Project $project, \DateTimeImmutable $since): int
+    {
+        return (int) $this->qbForProject($project)
+            ->select('COUNT(t.id)')
+            ->andWhere('t.updatedAt >= :since')
+            ->setParameter('since', $since)
+            ->getQuery()->getSingleScalarResult();
+    }
+
+    public function countCreatedSince(Project $project, \DateTimeImmutable $since): int
+    {
+        return (int) $this->qbForProject($project)
+            ->select('COUNT(t.id)')
+            ->andWhere('t.createdAt >= :since')
+            ->setParameter('since', $since)
+            ->getQuery()->getSingleScalarResult();
+    }
+
+    public function findByProject(Project $project): array
+    {
+        return $this->qbForProject($project)
+            ->leftJoin('t.issueType', 'it')->addSelect('it')
+            ->leftJoin('t.assignedTo', 'u')->addSelect('u')
+            ->getQuery()->getResult();
+    }
+
+    private function qbForProject(Project $project): QueryBuilder
+    {
+        return $this->createQueryBuilder('t')
+            ->innerJoin('t.status', 'st')
+            ->innerJoin('st.workflow', 'wf')
+            ->innerJoin('wf.project', 'p')
+            ->andWhere('p = :project')
+            ->setParameter('project', $project);
     }
 }

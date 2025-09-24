@@ -7,7 +7,7 @@
     </div>
     <ul class="nav flex-column px-2" id="nav-planning-menu">
         <li class="nav-item">
-            <a class="nav-link text-dark" href="#"><i class="bi bi-pie-chart"></i> Summary</a>
+            <a class="nav-link {% if 'summary' == activeMenu %}text-primary{% else %}text-dark{% endif %}" href="{{ path('dashboard_summary', {key: project.key}) }}"><i class="bi bi-pie-chart"></i> Summary</a>
         </li>
         <li class="nav-item">
             <a class="nav-link {% if 'board' == activeMenu %}text-primary{% else %}text-dark{% endif %}" href="{{ path('dashboard_index', {key: project.key}) }}"><i class="bi bi-kanban"></i> Board</a>
