@@ -42,7 +42,7 @@ $(document).ready(function () {
                 if (res.ok) {
                     if (res.html) {
                         $('#statusesList').html(res.html);
-                        highlightRow(res.currentStatus);
+                        highlightRow(res.currentStatus, 'flash-save');
                     }
 
                     $('#workflowModal').modal('hide');
@@ -95,16 +95,16 @@ $(document).ready(function () {
             url: deleteTarget.url,
             method: 'POST',
             dataType: 'json',
-            success: function (resp) {
-                const row = deleteTarget.row;
+            success: function (res) {
+                if (res.ok) {
+                    if (res.html) {
+                        $('#statusesList').html(res.html);
+                        highlightRow(res.currentStatus, 'flash-delete')
+                    }
 
-                row.addClass('flash-delete');
-                setTimeout(function () {
-                    row.slideUp(250, function () { $(this).remove(); });
-                }, 1000);
-
-                $('#confirmDeleteModal').modal('hide');
-                deleteTarget = null;
+                    $('#confirmDeleteModal').modal('hide');
+                    deleteTarget = null;
+                }
             },
             error: function (xhr) {
                 const msg = (xhr.responseJSON && xhr.responseJSON.message)
@@ -115,12 +115,12 @@ $(document).ready(function () {
         });
     });
 
-    function highlightRow(id) {
+    function highlightRow(id, className) {
         const row = $('.status-row[data-status-id="' + id + '"]');
-        row.addClass('flash-save');
+        row.addClass(className);
 
         setTimeout(function () {
-            row.removeClass('flash-save');
+            row.removeClass(className);
         }, 1000);
     }
 });

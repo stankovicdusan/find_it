@@ -1,0 +1,45 @@
+{% extends "dashboard/index.html.twig" %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="{{ asset('js/sprints.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+    <div class="container-fluid py-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h3 class="mb-0">Sprints — {{ project.title }}</h3>
+
+            <button class="btn btn-primary js-open-modal" data-url="{{ path('sprints_form_create', { key: project.key }) }}">
+                <i class="bi bi-flag me-1"></i> Create sprint
+            </button>
+        </div>
+
+        <div id="sprintsWrap" data-url="{{ path('sprints_list_partial', { key: project.key }) }}">
+            {% include 'dashboard/sprint/list.html.twig' with {
+                project: project,
+                active: active,
+                planned: planned,
+                completed: completed
+            } %}
+        </div>
+    </div>
+
+    {# Generic Confirm Modal (Start/Complete) #}
+    <div class="modal fade" id="sprintConfirmModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content shadow">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="sprintConfirmTitle">Confirm</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body" id="sprintConfirmBody">Are you sure?</div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-danger" id="sprintConfirmBtn">Confirm</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}

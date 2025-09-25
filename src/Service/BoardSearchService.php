@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Project;
+use App\Entity\Sprint;
 use App\Entity\Ticket;
 use App\Entity\WorkflowStatus;
 use Doctrine\ORM\EntityManagerInterface;
@@ -19,11 +20,9 @@ class BoardSearchService
     {
         $search = trim($search);
 
-        if (empty($search)) {
-            [$statuses, $ticketsByStatus] = $this->fullBoardData($project);
-        } else {
-            [$statuses, $ticketsByStatus] = $this->filteredBoardData($project, $search);
-        }
+        [$statuses, $ticketsByStatus] = empty($search)
+            ? $this->fullBoardData($project)
+            : $this->filteredBoardData($project, $search);
 
         return $this->twig->render('dashboard/board/board_columns.html.twig', [
             'project'         => $project,
@@ -35,17 +34,58 @@ class BoardSearchService
     public function fullBoardData(Project $project): array
     {
         $statuses = $this->em->getRepository(WorkflowStatus::class)->findByProjectWithTickets($project);
+        $statuses = $this->em->getRepository(WorkflowStatus::class)->findByProjectOrdered($project);
 
+        if ($project->isScrumProject()) {
+            $active = $this->em->getRepository(WorkflowStatus::class)->findActiveForProject($project);
+            $ticketsByStatus = [];
+            foreach ($statuses as $s) {
+                $ticketsByStatus[$s->getId()] = [];
+            }
+
+            if ($active) {
+                $rows = $this->em->getRepository(WorkflowStatus::class)->findByProjectWithTicketsForSprint($project, $active);
+                $ticketsByStatus = [];
+                foreach ($rows as $s) {
+                    $ticketsByStatus[$s->getId()] = $s->getTickets()->toArray();
+                }
+            }
+
+            return [$statuses, $ticketsByStatus];
+        }
+
+        $rows = $this->em->getRepository(WorkflowStatus::class)->findByProjectWithTickets($project);
         $ticketsByStatus = [];
-        foreach ($statuses as $s) {
+        foreach ($rows as $s) {
             $ticketsByStatus[$s->getId()] = $s->getTickets()->toArray();
         }
 
-        return [$statuses, $ticketsByStatus];
+        return [$rows, $ticketsByStatus];
     }
 
     public function filteredBoardData(Project $project, string $search): array
     {
+        $statuses = $this->em->getRepository(WorkflowStatus::class)->findByProjectOrdered($project);
+
+        if ($project->isScrumProject()) {
+            $active = $this->em->getRepository(Sprint::class)->findActiveForProject($project);
+            $ticketsByStatus = [];
+            foreach ($statuses as $s) $ticketsByStatus[$s->getId()] = [];
+
+            if (!$active) {
+                return [$statuses, $ticketsByStatus];
+            }
+
+            $found = $this->em->getRepository(Ticket::class)->searchByProjectAndTitleInSprint($project, $active, $search);
+            foreach ($found as $t) {
+                $sid = $t->getStatus()->getId();
+                $ticketsByStatus[$sid] ??= [];
+                $ticketsByStatus[$sid][] = $t;
+            }
+
+            return [$statuses, $ticketsByStatus];
+        }
+
         $found = $this->em->getRepository(Ticket::class)->searchByProjectAndTitle($project, $search);
 
         $byStatus = [];

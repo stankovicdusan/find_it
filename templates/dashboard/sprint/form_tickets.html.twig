@@ -1,0 +1,59 @@
+<div class="modal-header">
+    <h5 class="modal-title"><i class="bi bi-list-task me-2"></i>Sprint tickets — {{ sprint.name }}</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+    {% if tickets is empty %}
+        <div class="alert alert-info mb-0">No tickets currently in this sprint.</div>
+    {% else %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead class="bg-light">
+                <tr>
+                    <th style="width: 120px;">Key</th>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Assignee</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for t in tickets %}
+                    {% set key = t.status.workflow.project.key %}
+                    <tr>
+                        <td class="text-muted small">{{ key }}-{{ t.indexNumber }}</td>
+                        <td>
+                            <a href="#" class="text-decoration-none js-open-ticket"
+                               data-ticket-id="{{ t.id }}"
+                               data-url="{{ path('dashboard_ticket_modal', { key: key, id: t.id }) }}">
+                                {{ t.title }}
+                            </a>
+                        </td>
+                        <td>
+                            {{ t.status.title }}
+                            {% if t.status.isFinal %}
+                                <span class="badge text-bg-success ms-1">Final</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ t.assignedToName }}</td>
+                        <td class="text-end">
+                            <button class="btn btn-sm btn-outline-danger js-remove-sprint-ticket"
+                                    data-url="{{ path('sprints_ticket_remove', { key: project.key, id: sprint.id, ticket: t.id }) }}"
+                                    data-token="{{ csrf_token('sprint_ticket_remove_' ~ t.id) }}">
+                                <i class="bi bi-x-lg"></i> Remove
+                            </button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% endif %}
+
+    <div id="ticketsModalAlert" class="alert alert-danger d-none mt-2"></div>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Close</button>
+</div>

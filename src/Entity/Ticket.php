@@ -47,6 +47,10 @@ class Ticket
     #[ORM\JoinColumn(name: 'assigned_to_id', referencedColumnName: 'id')]
     private ?User $assignedTo = null;
 
+    #[ORM\ManyToOne(targetEntity: Sprint::class, inversedBy: 'tickets')]
+    #[ORM\JoinColumn(onDelete: 'SET NULL')]
+    private ?Sprint $sprint = null;
+
     #[ORM\OneToMany(targetEntity: TicketComment::class, mappedBy: 'ticket', cascade: ['remove'], orphanRemoval: true)]
     #[ORM\OrderBy(['createdAt' => 'DESC'])]
     private Collection $comments;
@@ -157,6 +161,16 @@ class Ticket
     public function getComments(): Collection
     {
         return $this->comments;
+    }
+
+    public function getSprint(): ?Sprint
+    {
+        return $this->sprint;
+    }
+
+    public function setSprint(?Sprint $sprint): void
+    {
+        $this->sprint = $sprint;
     }
 
     public function getColor(): string

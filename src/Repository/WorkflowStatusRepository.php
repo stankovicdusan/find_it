@@ -3,6 +3,8 @@
 namespace App\Repository;
 
 use App\Entity\Project;
+use App\Entity\Sprint;
+use App\Entity\Ticket;
 use App\Entity\Workflow;
 use App\Entity\WorkflowStatus;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -67,5 +69,42 @@ class WorkflowStatusRepository extends ServiceEntityRepository
             ->setParameter('ids', $statusIds)
             ->orderBy('s.sortOrder', 'ASC')
             ->getQuery()->getResult();
+    }
+
+    public function findByProjectOrdered(Project $project): array
+    {
+        return $this->createQueryBuilder('ws')
+            ->leftJoin('ws.workflow', 'w')
+            ->leftJoin('w.project', 'p')
+            ->where('p = :project')->setParameter('project', $project)
+            ->orderBy('ws.sortOrder', 'ASC')
+            ->getQuery()->getResult();
+    }
+
+    public function findByProjectWithTicketsForSprint(Project $project, Sprint $sprint): array
+    {
+        return $this->createQueryBuilder('ws')
+            ->leftJoin('ws.workflow', 'w')
+            ->leftJoin('w.project', 'p')
+            ->leftJoin('ws.tickets', 't', 'WITH', 't.sprint = :sprint')
+            ->addSelect('t')
+            ->where('p = :project')
+            ->setParameter('project', $project)
+            ->setParameter('sprint', $sprint)
+            ->orderBy('ws.sortOrder', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function getNextOrderBasedOnWorkflow(Workflow $workflow): int
+    {
+        $lastOrder = $this->createQueryBuilder('ws')
+            ->select('MAX(ws.sortOrder)')
+            ->where('ws.workflow = :workflow')
+            ->setParameter('workflow', $workflow)
+            ->getQuery()
+            ->getSingleScalarResult() ?? 0;
+
+        return (int) $lastOrder + 1;
     }
 }

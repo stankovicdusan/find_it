@@ -17,6 +17,19 @@
     <div class="container">
         <div class="header">
             <h3 class="mb-0">Board — {{ project.title }}</h3>
+
+            {% if project.isScrumProject %}
+                {% if activeSprint %}
+                    <div class="text-muted small mt-1">
+                        Sprint: <strong>{{ activeSprint.name }}</strong>
+                        ({{ activeSprint.plannedStartAt|date('d.m.Y') }} – {{ activeSprint.plannedEndAt|date('d.m.Y') }})
+                    </div>
+                {% else %}
+                    <div class="badge text-bg-warning mt-2" title="No active sprint">
+                        No active sprint — board shows empty columns.
+                    </div>
+                {% endif %}
+            {% endif %}
             <div class="search-group">
                 <form id="boardSearchForm" class="d-flex gap-2" autocomplete="off">
                     <input id="boardSearch" type="text" class="form-control" placeholder="Search tickets...">

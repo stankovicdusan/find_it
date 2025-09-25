@@ -2,6 +2,7 @@
 
 namespace App\Repository;
 
+use App\Entity\Sprint;
 use App\Entity\Ticket;
 use App\Entity\Project;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
@@ -84,6 +85,42 @@ class TicketRepository extends ServiceEntityRepository
             ->leftJoin('t.issueType', 'it')->addSelect('it')
             ->leftJoin('t.assignedTo', 'u')->addSelect('u')
             ->getQuery()->getResult();
+    }
+
+    public function findBacklogForProject(Project $project): array
+    {
+        return $this->qbForProject($project)
+            ->leftJoin('t.sprint', 'sp')
+            ->andWhere('sp IS NULL')
+            ->leftJoin('t.issueType','it')->addSelect('it')
+            ->leftJoin('t.assignedTo','u')->addSelect('u')
+            ->orderBy('t.updatedAt', 'DESC')
+            ->getQuery()->getResult();
+    }
+
+    public function findBySprint(Sprint $sprint): array
+    {
+        return $this->createQueryBuilder('t')
+            ->andWhere('t.sprint = :s')
+            ->setParameter('s', $sprint)
+            ->leftJoin('t.issueType','it')
+            ->addSelect('it')
+            ->leftJoin('t.assignedTo','u')
+            ->addSelect('u')
+            ->getQuery()->getResult();
+    }
+
+    public function searchByProjectAndTitleInSprint(Project $project, Sprint $sprint, string $q): array
+    {
+        $q = trim($q);
+        if ($q === '') return [];
+
+        return $this->qbForProject($project)
+            ->andWhere('t.sprint = :sprint')->setParameter('sprint', $sprint)
+            ->andWhere('LOWER(t.title) LIKE :q')->setParameter('q', '%'.mb_strtolower($q).'%')
+            ->orderBy('t.updatedAt', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 
     private function qbForProject(Project $project): QueryBuilder

@@ -25,18 +25,36 @@ class DashboardController extends BaseController
         #[MapEntity(mapping: ['key' => 'key'])] Entity\Project $project,
         EntityManagerInterface $em,
     ): Response {
-        $allStatuses = $project->getWorkflow()->getStatuses()->toArray();
-        $ticketsByStatus = [];
-        foreach ($allStatuses as $s) {
-            $ticketsByStatus[$s->getId()] = $s->getTickets()->toArray();
+        $isScrum = $project->isScrumProject();
+
+        $activeSprint = null;
+        if ($isScrum) {
+            $activeSprint = $em->getRepository(Entity\Sprint::class)->findActiveForProject($project);
+        }
+
+        if ($isScrum && $activeSprint) {
+            $workflowStatuses = $em->getRepository(Entity\WorkflowStatus::class)->findByProjectWithTicketsForSprint($project, $activeSprint);
+
+            $ticketsByStatus = [];
+            foreach ($workflowStatuses as $s) {
+                $ticketsByStatus[$s->getId()] = $s->getTickets()->toArray();
+            }
+        } else {
+            $workflowStatuses = $em->getRepository(Entity\WorkflowStatus::class)->findByProjectWithTickets($project);
+
+            $ticketsByStatus = [];
+            foreach ($workflowStatuses as $s) {
+                $ticketsByStatus[$s->getId()] = $isScrum ? [] : $s->getTickets()->toArray();
+            }
         }
 
         return $this->render('dashboard/board/index.html.twig', [
             'project'          => $project,
-            'workflowStatuses' => $em->getRepository(Entity\WorkflowStatus::class)->findByProjectWithTickets($project),
+            'workflowStatuses' => $workflowStatuses,
             'ticketsByStatus'  => $ticketsByStatus,
             'issueTypes'       => $em->getRepository(Entity\IssueType::class)->findAll(),
             'activeMenu'       => 'board',
+            'activeSprint'     => $activeSprint,
         ]);
     }
 

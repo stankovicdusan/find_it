@@ -112,7 +112,7 @@ class WorkflowStatusService
         Workflow $workflow,
         WorkflowStatus $status,
     ): void {
-        if (!$workflow->getStatuses()->isEmpty() && count($toStatusIds) < 1) {
+        if (!$workflow->getStatuses()->isEmpty() && count($toStatusIds) < 1 && !$status->isFinal()) {
             throw new \DomainException('Select at least one transition.');
         }
 
@@ -126,28 +126,30 @@ class WorkflowStatusService
 
         $status->getTransitions()->clear();
 
-        $statusById = [];
-        foreach ($workflow->getStatuses() as $wfStatus) {
-            $statusById[$wfStatus->getId()] = $wfStatus;
-        }
-
-        foreach ($toStatusIds as $rawId) {
-            if (!isset($statusById[$rawId])) {
-                continue;
+        if (!$status->isFinal()) {
+            $statusById = [];
+            foreach ($workflow->getStatuses() as $wfStatus) {
+                $statusById[$wfStatus->getId()] = $wfStatus;
             }
 
-            $toStatus = $statusById[$rawId];
+            foreach ($toStatusIds as $rawId) {
+                if (!isset($statusById[$rawId])) {
+                    continue;
+                }
 
-            if ($toStatus === $status) {
-                continue;
+                $toStatus = $statusById[$rawId];
+
+                if ($toStatus === $status) {
+                    continue;
+                }
+
+                $transition = new WorkflowTransition();
+
+                $transition->setFromStatus($status);
+                $transition->setToStatus($toStatus);
+
+                $this->em->persist($transition);
             }
-
-            $transition = new WorkflowTransition();
-
-            $transition->setFromStatus($status);
-            $transition->setToStatus($toStatus);
-
-            $this->em->persist($transition);
         }
 
         if (null === $status->getId()) {
@@ -184,7 +186,7 @@ class WorkflowStatusService
         $status = new WorkflowStatus();
 
         $status->setWorkflow($workflow);
-        $status->setSortOrder(1); // temporary
+        $status->setSortOrder($this->em->getRepository(WorkflowStatus::class)->getNextOrderBasedOnWorkflow($workflow));
 
         return $status;
     }

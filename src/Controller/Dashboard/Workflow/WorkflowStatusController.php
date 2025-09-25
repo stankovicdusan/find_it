@@ -73,14 +73,22 @@ class WorkflowStatusController extends BaseController
             return new JsonResponse(['message' => 'Status does not belong to this project.'], 403);
         }
 
+        $statusId = $status->getId();
         try {
             $workflowStatusService->deleteIfEmpty($status);
         } catch (\RuntimeException $e) {
             return new JsonResponse(['message' => $e->getMessage()], 409);
         }
 
+        $statuses = $project->getWorkflow()->getStatuses();
+
         return new JsonResponse([
-            'success' => true,
+            'ok'   => true,
+            'html' => $this->renderView('dashboard/workflows/statuses_list.html.twig', [
+                'project'  => $project,
+                'statuses' => $statuses,
+            ]),
+            'currentStatus' => $statusId,
         ]);
     }
 }

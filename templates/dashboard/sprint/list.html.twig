@@ -1,0 +1,139 @@
+{# expects: project, active, planned, completed #}
+<div class="row g-3">
+
+    {# ACTIVE #}
+    <div class="col-12">
+        <div class="card border-0 shadow-sm">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="fw-semibold">Active sprint</span>
+                    {% if active %}
+                        {% set overdue = (active.state.value == 'ACTIVE' and active.plannedEndAt < 'now'|date) %}
+                        {% if overdue %}
+                            <span class="badge text-bg-danger">Overdue</span>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                {% if active %}
+                    <a class="btn btn-sm btn-outline-primary"
+                       href="{{ path('dashboard_index', { key: project.key }) }}">
+                        <i class="bi bi-kanban"></i> Sprint Board
+                    </a>
+                {% endif %}
+            </div>
+
+            <div class="card-body">
+                {% if not active %}
+                    <div class="text-muted">No active sprint.</div>
+                {% else %}
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="mb-1 fw-semibold">{{ active.name }}</div>
+                            {% if active.goal %}<div class="text-muted small">{{ active.goal }}</div>{% endif %}
+                            <div class="small mt-2">
+                                <span class="text-muted">Planned:</span>
+                                {{ active.plannedStartAt|date('d.m.Y') }} – {{ active.plannedEndAt|date('d.m.Y') }}
+                                {% if active.startedAt %}
+                                    <span class="ms-2 text-muted">Actual:</span>
+                                    {{ active.startedAt|date('d.m.Y') }}
+                                    {% if active.completedAt %}– {{ active.completedAt|date('d.m.Y') }}{% endif %}
+                                {% endif %}
+                            </div>
+                            <div class="small text-muted mt-1">Done = tickets in statuses marked as <em>Final</em>.</div>
+                        </div>
+                        <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                            <button class="btn btn-danger js-open-modal"
+                                    data-url="{{ path('sprints_form_complete', { key: project.key, id: active.id }) }}">
+                                <i class="bi bi-check2-circle"></i> Complete sprint
+                            </button>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {# PLANNED #}
+    <div class="col-12 col-xl-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold">Planned</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Planned</th>
+                            <th class="text-end">Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        {% for s in planned %}
+                            <tr>
+                                <td class="fw-semibold">{{ s.name }}</td>
+                                <td class="text-muted small">
+                                    {{ s.plannedStartAt|date('d.m.Y') }} – {{ s.plannedEndAt|date('d.m.Y') }}
+                                </td>
+                                <td class="text-end">
+                                    {% if s.tickets is not empty %}
+                                        <button class="btn btn-sm btn-outline-secondary js-open-modal"
+                                                data-url="{{ path('sprints_form_tickets', { key: project.key, id: s.id }) }}">
+                                            <i class="bi bi-card-checklist"></i> View tickets
+                                        </button>
+
+                                        <button class="btn btn-sm btn-success js-open-modal"
+                                                data-url="{{ path('sprints_form_start', { key: project.key, id: s.id }) }}">
+                                            <i class="bi bi-play-fill"></i> Start
+                                        </button>
+                                    {% else %}
+                                        <span class="badge rounded-pill text-bg-warning me-2"
+                                              title="This sprint has no tickets yet">
+                                            No tickets
+                                        </span>
+
+                                        <a class="btn btn-sm btn-outline-primary me-2"
+                                                href="{{ path('backlog_index', { key: project.key }) }}">
+                                            <i class="bi bi-plus-lg"></i> Add tickets
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% else %}
+                            <tr><td colspan="3" class="text-muted p-3">No planned sprints.</td></tr>
+                        {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# COMPLETED #}
+    <div class="col-12 col-xl-6">
+        <div class="card border-0 shadow-sm h-100">
+            <div class="card-header bg-white fw-semibold">Completed (recent)</div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle mb-0">
+                        <thead class="bg-light">
+                        <tr>
+                            <th>Name</th>
+                            <th>Completed</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in completed %}
+                                <tr>
+                                    <td class="fw-semibold">{{ s.name }}</td>
+                                    <td class="text-muted small">{{ s.completedAt ? s.completedAt|date('d.m.Y') : '—' }}</td>
+                                </tr>
+                            {% else %}
+                                <tr><td colspan="3" class="text-muted p-3">No completed sprints yet.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

@@ -11,14 +11,16 @@
         </div>
 
         <div class="col-2">
-        <span class="badge bg-info">
-            {{ status.tickets|length }} tickets
-        </span>
+            <span class="badge bg-info">
+                {{ status.tickets|length }} tickets
+            </span>
         </div>
 
         <div class="col-2">
             {% if status.isInitial %}
                 <span class="badge bg-success">Initial</span>
+            {% elseif status.isFinal %}
+                <span class="badge bg-danger">Final</span>
             {% endif %}
         </div>
 

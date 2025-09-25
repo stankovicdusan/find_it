@@ -13,9 +13,14 @@
                 {{ form_widget(form.title) }}
                 {{ form_errors(form.title) }}
             </div>
-            <div class="mb-3">
+            <div>
                 {{ form_widget(form.isInitial) }}
                 {{ form_label(form.isInitial) }}
+            </div>
+            <div class="mb-3">
+                {{ form_widget(form.isFinal) }}
+                {{ form_label(form.isFinal) }}
+                {{ form_errors(form.isFinal) }}
             </div>
             <div class="mb-3">
                 {% if form.no_transitions_info is defined %}

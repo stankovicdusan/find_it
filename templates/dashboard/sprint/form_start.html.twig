@@ -1,0 +1,51 @@
+<div class="modal-header">
+    <h5 class="modal-title"><i class="bi bi-play-fill me-2"></i>Start Sprint</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+{{ form_start(form, {attr: { class: 'js-ajax-form', 'data-refresh-target': '#sprintsWrap' }}) }}
+<div class="modal-body">
+    <p class="mb-1">Start <strong>{{ sprint.name }}</strong>?</p>
+    <div class="text-muted small mb-2">
+        Planned: {{ sprint.plannedStartAt|date('d.m.Y') }} – {{ sprint.plannedEndAt|date('d.m.Y') }}
+    </div>
+
+    {% set today    = "now"|date('Y-m-d') %}
+    {% set startDay = sprint.plannedStartAt|date('Y-m-d') %}
+    {% set endDay   = sprint.plannedEndAt|date('Y-m-d') %}
+
+    {% set isLate    = today > startDay %}
+    {% set isOverdue = today > endDay %}
+    {% set showShift = isLate or isOverdue %}
+
+    {% if isLate %}
+        {% set daysLate = ((today|date('U') - startDay|date('U')) / 86400)|round(0, 'floor') %}
+        <div class="alert alert-warning py-2">
+            You’re starting {{ daysLate }} day(s) late.
+        </div>
+    {% endif %}
+
+    {% if isOverdue %}
+        {% set daysOver = ((today|date('U') - endDay|date('U')) / 86400)|round(0, 'floor') %}
+        <div class="alert alert-danger py-2">
+            Planned end was {{ daysOver }} day(s) ago. The sprint will be overdue immediately unless you adjust dates.
+        </div>
+    {% endif %}
+
+    {% if showShift %}
+        <div class="form-check mt-2">
+            {{ form_widget(form.shiftWindow, {'attr': {'class': 'form-check-input'}}) }}
+            {{ form_label(form.shiftWindow, null, {
+                'label_attr': { 'class': 'form-check-label', 'for': form.shiftWindow.vars.id }
+            }) }}
+            {{ form_errors(form.shiftWindow) }}
+        </div>
+    {% endif %}
+
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+    <button type="submit" class="btn btn-success">Start</button>
+</div>
+{{ form_end(form) }}

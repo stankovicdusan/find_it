@@ -26,6 +26,7 @@ class WorkflowService
             $status->setSortOrder($order++);
             $status->setWorkflow($workflow);
             $status->setIsInitial(DefaultWorkflowStatusEnum::BACKLOG === $statusEnum);
+            $status->setIsFinal(DefaultWorkflowStatusEnum::DONE === $statusEnum);
 
             $this->em->persist($status);
 
