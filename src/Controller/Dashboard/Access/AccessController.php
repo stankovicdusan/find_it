@@ -4,9 +4,7 @@ namespace App\Controller\Dashboard\Access;
 
 use App\Entity;
 use App\Controller\BaseController;
-use App\Enum\MemberStatusEnum;
-use App\Enum\ProjectRoleEnum;
-use Doctrine\ORM\EntityManagerInterface;
+use App\Service\AccessService;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -14,11 +12,11 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
-#[Route('/dashboard/{key}', name: 'dashboard_')]
+#[Route('/dashboard/{key}/access', name: 'dashboard_')]
 #[IsGranted('PROJECT_ADMIN', subject: 'project')]
 class AccessController extends BaseController
 {
-    #[Route('/access', name: 'access', methods: ['GET'])]
+    #[Route('', name: 'access', methods: ['GET'])]
     public function index(
         #[MapEntity(mapping: ['key' => 'key'])] Entity\Project $project,
     ): Response {
@@ -30,137 +28,62 @@ class AccessController extends BaseController
         );
     }
 
-    #[Route('/access/list', name: 'access_list', methods: ['GET'])]
+    #[Route('/list', name: 'access_list', methods: ['GET'])]
     public function list(
         Request $request,
         #[MapEntity(mapping: ['key' => 'key'])] Entity\Project $project,
-        EntityManagerInterface $em,
+        AccessService $accessService,
     ): Response {
         $q = trim((string) $request->query->get('q',''));
-        $members = $em->getRepository(Entity\ProjectUser::class)->searchByProject($project, $q);
+        $html = $accessService->renderMembersTable($project, $q);
 
-        return new Response(
-            $this->renderView('dashboard/access/members_table.html.twig', [
-                'project' => $project,
-                'members' => $members,
-            ])
-        );
+        return new Response($html);
     }
 
-    #[Route('/access/invite', name: 'access_invite', methods: ['POST'])]
+    #[Route('/invite', name: 'access_invite', methods: ['POST'])]
     public function invite(
         Request $request,
         #[MapEntity(mapping: ['key'=>'key'])] Entity\Project $project,
-        EntityManagerInterface $em,
+        AccessService $accessService,
     ): JsonResponse {
-        if (!$this->isCsrfTokenValid('invite_member_' . $project->getId(), $request->request->get('_token'))) {
-            return new JsonResponse(['ok' => false, 'message' => 'Invalid CSRF'], 403);
-        }
+        $email = (string) $request->request->get('email', '');
+        $role  = (string) $request->request->get('role', '');
+        $csrf  = (string) $request->request->get('_token', '');
 
-        $email = trim((string) $request->request->get('email', ''));
-        $role = in_array($request->request->get('role'), ProjectRoleEnum::cases()) ? $request->request->get('role') : ProjectRoleEnum::MEMBER->value;
-        $role = ProjectRoleEnum::fromString($role);
+        $res = $accessService->invite($project, $email, $role, $csrf);
+        $code = $res['code'] ?? ($res['ok'] ? 200 : 422);
 
-        if ('' === $email) {
-            return new JsonResponse(['ok' => false, 'message' => 'Email required'], 422);
-        }
-
-        if ($em->getRepository(Entity\ProjectUser::class)->memberExists($project, $email)) {
-            return new JsonResponse([
-                'ok' => false,
-                'message' => 'This email is already added.'
-            ], 422);
-        }
-
-        $pm = new Entity\ProjectUser();
-
-        $pm->setProject($project);
-        $pm->setEmail($email);
-        $pm->setRole($role);
-
-        if ($user = $em->getRepository(Entity\User::class)->findOneBy(['email' => $email])) {
-            $pm->setUser($user);
-            $pm->setStatus(MemberStatusEnum::ACTIVE);
-        } else {
-            $pm->setStatus(MemberStatusEnum::INVITED);
-        }
-
-        $em->persist($pm);
-        $em->flush();
-
-        $html = $this->renderView('dashboard/access/members_table.html.twig', [
-            'project' => $project,
-            'members' => $em->getRepository(Entity\ProjectUser::class)->searchByProject($project, ''),
-        ]);
-
-        return new JsonResponse([
-            'ok'   => true,
-            'html' => $html,
-        ]);
+        return new JsonResponse($res, $code);
     }
 
-    #[Route('/access/role/{member}', name: 'access_role', methods: ['POST'])]
+    #[Route('/role/{member}', name: 'access_role', methods: ['POST'])]
     public function roles(
         Request $request,
         #[MapEntity(mapping: ['key' => 'key'])] Entity\Project $project,
         Entity\ProjectUser $member,
-        EntityManagerInterface $em,
+        AccessService $accessService,
     ): JsonResponse {
-        if ($member->getProject()->getId() !== $project->getId()) {
-            return new JsonResponse(['ok' => false], 404);
-        }
+        $role = (string) $request->request->get('role', '');
+        $csrf = (string) $request->request->get('_token', '');
 
-        if (!$this->isCsrfTokenValid('member_action_' . $member->getId(), $request->request->get('_token'))) {
-            return new JsonResponse(['ok' => false, 'message' => 'Invalid CSRF'], 403);
-        }
+        $res  = $accessService->changeRole($project, $member, $role, $csrf);
+        $code = $res['code'] ?? ($res['ok'] ? 200 : 422);
 
-        $role = $request->request->get('role');
-        $role = ProjectRoleEnum::fromString($role);
-        if (!in_array($role, ProjectRoleEnum::cases())) {
-            return new JsonResponse(['ok' => false], 422);
-        }
-
-        if (ProjectRoleEnum::ADMIN === $member->getRole() && ProjectRoleEnum::MEMBER === $role && $em->getRepository(Entity\ProjectUser::class)->countAdmins($project) <= 1) {
-            return new JsonResponse(['ok' => false, 'message' => 'At least one admin required'], 422);
-        }
-
-        $member->setRole($role);
-        $em->flush();
-
-        return new JsonResponse(['ok' => true]);
+        return new JsonResponse($res, $code);
     }
 
-    #[Route('/access/remove/{member}', name: 'access_remove', methods: ['POST'])]
+    #[Route('/remove/{member}', name: 'access_remove', methods: ['POST'])]
     public function remove(
         Request $request,
         #[MapEntity(mapping: ['key' => 'key'])] Entity\Project $project,
         Entity\ProjectUser $member,
-        EntityManagerInterface $em,
+        AccessService $accessService,
     ): JsonResponse {
-        if ($member->getProject()->getId() !== $project->getId()) {
-            return new JsonResponse(['ok' => false], 404);
-        }
+        $csrf = (string) $request->request->get('_token', '');
 
-        if (!$this->isCsrfTokenValid('member_action_' . $member->getId(), $request->request->get('_token'))) {
-            return new JsonResponse(['ok' => false, 'message' => 'Invalid CSRF'], 403);
-        }
+        $res  = $accessService->remove($project, $member, $this->getLoggedInUser(), $csrf);
+        $code = $res['code'] ?? ($res['ok'] ? 200 : 422);
 
-        if ($member->getUser() && $this->getUser() && $member->getUser()->getId() === $this->getUser()->getId()) {
-            return new JsonResponse(['ok' => false, 'message' => "You cannot remove yourself from this project."], 422);
-        }
-
-        if (ProjectRoleEnum::ADMIN === $member->getRole() && $em->getRepository(Entity\ProjectUser::class)->countAdmins($project) <= 1) {
-            return new JsonResponse(['ok' => false, 'message' => 'At least one admin required'], 422);
-        }
-
-        $em->remove($member);
-        $em->flush();
-
-        $html = $this->renderView('dashboard/access/members_table.html.twig', [
-            'project' => $project,
-            'members' => $em->getRepository(Entity\ProjectUser::class)->searchByProject($project, ''),
-        ]);
-
-        return new JsonResponse(['ok' => true, 'html' => $html]);
+        return new JsonResponse($res, $code);
     }
 }

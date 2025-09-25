@@ -150,7 +150,7 @@ class Ticket
         return $this->assignedTo;
     }
 
-    public function setAssignedTo(User $assignedTo): void
+    public function setAssignedTo(?User $assignedTo): void
     {
         $this->assignedTo = $assignedTo;
     }

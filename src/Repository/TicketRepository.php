@@ -5,6 +5,7 @@ namespace App\Repository;
 use App\Entity\Sprint;
 use App\Entity\Ticket;
 use App\Entity\Project;
+use App\Entity\User;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\ORM\QueryBuilder;
 use Doctrine\Persistence\ManagerRegistry;
@@ -121,6 +122,14 @@ class TicketRepository extends ServiceEntityRepository
             ->orderBy('t.updatedAt', 'DESC')
             ->getQuery()
             ->getResult();
+    }
+
+    public function getUserTicketsFromProject(User $user, Project $project): array
+    {
+        return $this->qbForProject($project)
+            ->andWhere('t.assignedTo = :user')
+            ->setParameter('user', $user)
+            ->getQuery()->getResult();
     }
 
     private function qbForProject(Project $project): QueryBuilder
