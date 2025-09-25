@@ -158,6 +158,72 @@ $(document).ready(function () {
         });
     });
 
+    $(document).on('click', '.js-ticket-status-choice', function (e) {
+        e.preventDefault();
+
+        const $item       = $(this);
+        const toStatusId  = parseInt($item.data('to-status'), 10);
+        const fromStatusId= parseInt($item.data('from-status'), 10);
+
+        const $box     = $item.closest('#ticketStatusBox');
+        const ticketId = parseInt($box.data('ticket-id'), 10);
+        const moveUrl  = $box.data('move-url');
+        const csrf     = $box.data('csrf');
+
+        const $toList = $('.ticket-list[data-status-id="' + toStatusId + '"]');
+        let order = [];
+        if ($toList.length) {
+            const current = $toList.children('.ticket-item').map(function () {
+                return $(this).find('.ticket-card').data('ticket-id');
+            }).get();
+            order = [ticketId].concat(current.filter(id => id !== ticketId));
+        }
+
+        $.ajax({
+            url: moveUrl,
+            method: 'POST',
+            dataType: 'json',
+            data: { _token: csrf, ticketId, toStatusId, order }
+        })
+            .done(function (res) {
+                if (!res || !res.ok) {
+                    alert(res?.message || 'Update failed.');
+                    return;
+                }
+
+                if ($toList.length) {
+                    const $fromList = $('.ticket-list[data-status-id="' + fromStatusId + '"]');
+                    const $itemCard = $('.ticket-card[data-ticket-id="' + ticketId + '"]').closest('.ticket-item');
+
+                    if ($itemCard.length) {
+                        $toList.prepend($itemCard);
+
+                        const $fromBadge = $fromList.closest('.column').find('.badge').first();
+                        const $toBadge   = $toList.closest('.column').find('.badge').first();
+
+                        if ($fromList.length) $fromBadge.text($fromList.find('.ticket-item').length);
+                        $toBadge.text($toList.find('.ticket-item').length);
+                    } else {
+                        const $grid = $('#boardGrid');
+                        const url   = $grid.data('search-url');
+                        if (url) $.get(url, { q: '' }).done(html => $grid.html(html));
+                    }
+                }
+
+                const $card  = $('.js-open-ticket[data-ticket-id="' + ticketId + '"]');
+                const modalUrl = $card.data('url');
+                if (modalUrl) {
+                    $('#ticketModalContent').html(
+                        '<div class="modal-body text-center p-5"><div class="spinner-border text-primary" role="status"></div></div>'
+                    );
+                    $.get(modalUrl).done(html => $('#ticketModalContent').html(html));
+                }
+            })
+            .fail(function (xhr) {
+                alert(xhr.responseJSON?.message || 'Update failed.');
+            });
+    });
+
     (function () {
         const $modal   = $('#ticketModal');
         const $content = $('#ticketModalContent');

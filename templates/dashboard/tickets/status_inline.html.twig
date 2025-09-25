@@ -1,0 +1,29 @@
+<div id="ticketStatusBox"
+     class="mb-3"
+     data-ticket-id="{{ ticket.id }}"
+     data-move-url="{{ path('dashboard_ticket_move', { key: project.key }) }}"
+     data-csrf="{{ csrf_token('ticket_move_' ~ ticket.id) }}"
+>
+    <div class="dropdown">
+        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            Status: <strong>{{ ticket.status.title }}</strong>
+        </button>
+
+        <ul class="dropdown-menu">
+            {% if allowedTo is empty %}
+                <li><span class="dropdown-item-text text-muted">No transitions available</span></li>
+            {% else %}
+                {% for s in allowedTo %}
+                    <li>
+                        <a href="#"
+                           class="dropdown-item js-ticket-status-choice"
+                           data-to-status="{{ s.id }}"
+                           data-from-status="{{ ticket.status.id }}">
+                            {{ s.title }}
+                        </a>
+                    </li>
+                {% endfor %}
+            {% endif %}
+        </ul>
+    </div>
+</div>

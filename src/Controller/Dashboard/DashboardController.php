@@ -69,16 +69,15 @@ class DashboardController extends BaseController
         return new Response($html);
     }
 
-
     #[Route(path: '/move', name: 'ticket_move', methods: ["POST"])]
     public function ticketMove(
         Request $req,
         TicketService $ticketService,
         EntityManagerInterface $em,
     ): JsonResponse {
-        $ticketId  = (int) $req->request->get('ticketId');
-        $toStatusId= (int) $req->request->get('toStatusId');
-        $order     = $req->request->all('order');
+        $ticketId   = (int) $req->request->get('ticketId');
+        $toStatusId = (int) $req->request->get('toStatusId');
+        $order      = $req->request->all('order');
 
         $ticket = $em->getRepository(Entity\Ticket::class)->find($ticketId);
         $to     = $em->getRepository(Entity\WorkflowStatus::class)->find($toStatusId);
@@ -99,10 +98,17 @@ class DashboardController extends BaseController
     ): Response {
         $form = $this->createForm(TicketCommentType::class);
 
+        $from = $ticket->getStatus();
+        $allowedTo = [];
+        foreach ($from->getTransitions() as $tr) {
+            $allowedTo[] = $tr->getToStatus();
+        }
+
         return $this->render('dashboard/tickets/ticket_modal.html.twig', [
             'project'     => $project,
             'ticket'      => $ticket,
             'commentForm' => $form->createView(),
+            'allowedTo'   => $allowedTo,
         ]);
     }
 
