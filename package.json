@@ -1,0 +1,11 @@
+{
+  "name": "planit",
+  "private": true,
+  "scripts": {
+    "dev": "sass assets/styles/style.scss assets/styles/style.css --no-source-map --style=expanded --watch",
+    "build": "sass assets/styles/style.scss assets/styles/style.css --style=compressed"
+  },
+  "devDependencies": {
+    "sass": "^1.80.0"
+  }
+}

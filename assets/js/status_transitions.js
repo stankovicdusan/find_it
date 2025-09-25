@@ -12,9 +12,10 @@ function initBoards() {
             forcePlaceholderSize: true,
             dropOnEmpty: true,
             revert: 120,
-            appendTo: 'body',
-            helper: 'clone',
+            appendTo: '#boardGrid',
+            helper: 'original',
             cancel: '',
+            zIndex: 10000,
 
             start: function (_e, ui) {
                 ui.item.find('.ticket-card').removeAttr('data-bs-toggle data-bs-target');
@@ -69,8 +70,10 @@ function handleDrop($toList, ui) {
 
                 return;
             }
+
             const $fromBadge = $fromList.closest('.column').find('.badge');
             const $toBadge   = $toList.closest('.column').find('.badge');
+
             $fromBadge.text($fromList.find('.ticket-item').length);
             $toBadge.text($toList.find('.ticket-item').length);
         },

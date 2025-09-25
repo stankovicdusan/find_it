@@ -78,34 +78,51 @@
         &.theme-green   .column-header { background-color: #e8fbe8; }
         &.theme-purple  .column-header { background-color: #f3e6ff; }
         &.theme-orange  .column-header { background-color: #fff0e0; }
-
-        .card {
-            background-color: white;
-            padding: 8px 0 8px 16px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            margin-bottom: 8px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s, box-shadow 0.3s;
-            cursor: pointer;
-
-            &:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-            }
-
-            p {
-                margin: 0 0 8px;
-                font-size: 14px;
-            }
-
-            .project-key {
-                color: #007bff;
-                font-weight: bold;
-                margin-bottom: 0;
-            }
-        }
     }
+}
+
+.ticket-card {
+    background-color: white;
+    padding: 8px 0 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s, box-shadow 0.3s;
+    cursor: pointer;
+
+    &:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    p {
+        margin: 0 0 8px;
+        font-size: 14px;
+    }
+
+    .project-key {
+        color: #007bff;
+        font-weight: bold;
+        margin-bottom: 0;
+    }
+}
+
+/* --- helper i placeholder --- */
+.ui-sortable-helper,
+.drag-helper {
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  opacity: 0.95;
+  background: white;
+}
+
+.ticket-placeholder {
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  margin: 4px;
+  height: 64px; // fallback
+  background: rgba(0, 0, 0, 0.03);
 }
 
 @media (min-width: 768px) {
