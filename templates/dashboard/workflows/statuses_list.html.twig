@@ -1,6 +1,9 @@
 {% for status in statuses %}
     <div class="row align-items-center py-2 border-bottom status-row" data-status-id="{{ status.id }}">
         <div class="col-3">
+            <span class="drag-handle text-muted me-2" title="Drag to reorder" style="cursor:grab;">
+                <i class="bi bi-grip-vertical"></i>
+            </span>
             <strong>{{ status.title }}</strong>
         </div>
 
@@ -29,12 +32,22 @@
                     data-url="{{ path('workflow_status_form', { key: project.key, status: status.id }) }}">
                 Edit
             </button>
-            {% set minReached = statuses|length <= 2 %}
+            {% set protected = status.isInitial or status.isFinal %}
+            {% set minReached = (project.workflow.statuses|length) <= 2 %}
+
             <button type="button"
-                    class="btn btn-sm btn-danger flex-fill js-delete-status {{ minReached ? 'btn-disabled' : '' }}"
-                    aria-disabled="{{ minReached ? 'true' : 'false' }}"
+                    class="btn btn-sm btn-danger flex-fill
+               {{ (minReached or protected) ? 'disabled' : 'js-delete-status' }}"
+                    aria-disabled="{{ (minReached or protected) ? 'true' : 'false' }}"
                     data-url="{{ path('workflow_status_delete', { key: project.key, status: status.id }) }}"
-                    title="{{ minReached ? 'At least 2 statuses required' : '' }}">
+                    data-check-url="{{ path('workflow_status_delete_check', { key: project.key, status: status.id }) }}"
+                    title="{% if protected %}
+                 {{ status.isInitial ? 'Initial status cannot be deleted' : 'Final status cannot be deleted' }}
+               {% elseif minReached %}
+                 At least 2 statuses required
+               {% else %}
+                 Delete
+               {% endif %}">
                 Delete
             </button>
         </div>

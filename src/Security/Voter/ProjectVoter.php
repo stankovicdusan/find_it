@@ -1,14 +1,13 @@
 <?php
 
-// src/Security/Voter/ProjectVoter.php
 namespace App\Security\Voter;
 
 use App\Entity\Project;
 use App\Entity\ProjectUser;
+use App\Entity\Sprint;
 use App\Entity\User;
 use App\Enum\MemberStatusEnum;
-use App\Enum\ProjectRoleEnum;
-use App\Repository\ProjectUserRepository;
+use App\Enum\RoleEnum;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Core\Authentication\Token\TokenInterface;
 use Symfony\Component\Security\Core\Authorization\Voter\Voter;
@@ -16,6 +15,7 @@ use Symfony\Component\Security\Core\Authorization\Voter\Voter;
 final class ProjectVoter extends Voter
 {
     public const MEMBER = 'PROJECT_MEMBER';
+    public const MANAGER = 'PROJECT_MANAGER';
     public const ADMIN  = 'PROJECT_ADMIN';
     public const MANAGE_SETTINGS = 'PROJECT_MANAGE_SETTINGS';
 
@@ -30,14 +30,22 @@ final class ProjectVoter extends Voter
     protected function voteOnAttribute(string $attribute, mixed $project, TokenInterface $token): bool
     {
         $user = $token->getUser();
-        if (!$user instanceof User) return false;
+        if (!$user instanceof User) {
+            return false;
+        }
 
-        $pm = $this->em->getRepository(ProjectUser::class)->findOneByUserAndProject($user, $project);
-        if (!$pm || $pm->getStatus() !== MemberStatusEnum::ACTIVE) return false;
+        $pu = $this->em->getRepository(ProjectUser::class)->findOneByUserAndProject($user, $project);
+        if (!$pu || $pu->getStatus() !== MemberStatusEnum::ACTIVE) {
+            return false;
+        }
+
+        $isAdmin   = $pu->getRole()->getId() === RoleEnum::ADMIN->value;
+        $isManager = $pu->getRole()->getId() === RoleEnum::MANAGER->value;
 
         return match ($attribute) {
             self::MEMBER => true,
-            self::ADMIN, self::MANAGE_SETTINGS => $pm->getRole() === ProjectRoleEnum::ADMIN,
+            self::ADMIN, self::MANAGE_SETTINGS => $isAdmin,
+            self::MANAGER => $isManager || $isAdmin,
             default => false,
         };
     }

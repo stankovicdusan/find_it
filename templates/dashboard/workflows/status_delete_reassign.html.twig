@@ -1,0 +1,33 @@
+<div class="modal-header bg-warning text-dark">
+    <h5 class="modal-title">Reassign tickets & delete status</h5>
+    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+
+<div class="modal-body">
+    <p class="mb-3">
+        Status <strong>{{ status.title }}</strong> currently has
+        <strong>{{ ticketsCount }}</strong> ticket(s).
+    </p>
+
+    <form id="statusReassignForm"
+          data-post-url="{{ postUrl }}"
+          data-token="{{ csrf_token('workflow_status_delete_' ~ status.id) }}">
+        <div class="mb-3">
+            <label for="reassignTarget" class="form-label">Move these tickets to</label>
+            <select id="reassignTarget" name="targetStatusId" class="form-select" required>
+                <option value="" selected disabled>Choose target status…</option>
+                {% for s in otherStatuses %}
+                    <option value="{{ s.id }}">{{ s.title }}</option>
+                {% endfor %}
+            </select>
+            <div class="form-text">Only statuses from the same workflow are listed.</div>
+        </div>
+    </form>
+</div>
+
+<div class="modal-footer">
+    <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
+    <button type="button" class="btn btn-danger" id="confirmReassignDeleteBtn">
+        Move & Delete
+    </button>
+</div>

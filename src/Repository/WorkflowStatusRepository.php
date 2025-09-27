@@ -107,4 +107,15 @@ class WorkflowStatusRepository extends ServiceEntityRepository
 
         return (int) $lastOrder + 1;
     }
+
+    public function getSortedStatuses(Project $project): array
+    {
+        $qb = $this->createQueryBuilder('ws')
+            ->innerJoin('ws.workflow', 'wf')
+            ->innerJoin('wf.project', 'p')
+            ->andWhere('p = :project')->setParameter('project', $project)
+            ->orderBy('ws.sortOrder', 'ASC');
+
+        return $qb->getQuery()->getResult();
+    }
 }

@@ -44,14 +44,16 @@ class ProjectUserRepository extends ServiceEntityRepository
             ->getQuery()->getOneOrNullResult();
     }
 
-    public function countAdmins(Project $project): int
+    public function getProjectMembers(Project $project): array
     {
-        return (int) $this->createQueryBuilder('m')
-            ->select('COUNT(m.id)')
-            ->andWhere('m.project = :p AND m.role = :r')
-            ->setParameter('p', $project)
-            ->setParameter('r', ProjectRoleEnum::ADMIN)
-            ->getQuery()->getSingleScalarResult();
+        $qb = $this->createQueryBuilder('m')
+            ->leftJoin('m.user','u')
+            ->addSelect('u')
+            ->andWhere('m.project = :project')
+            ->setParameter('project', $project)
+            ->orderBy('m.id','DESC');
+
+        return $qb->getQuery()->getResult();
     }
 
     public function countPendingForEmail(string $email): int

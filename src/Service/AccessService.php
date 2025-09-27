@@ -4,10 +4,10 @@ namespace App\Service;
 
 use App\Entity\Project;
 use App\Entity\ProjectUser;
+use App\Entity\Role;
 use App\Entity\Ticket;
 use App\Entity\User;
 use App\Enum\MemberStatusEnum;
-use App\Enum\ProjectRoleEnum;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\Security\Csrf\CsrfToken;
 use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
@@ -28,14 +28,15 @@ class AccessService
         return $this->twig->render('dashboard/access/members_table.html.twig', [
             'project' => $project,
             'members' => $members,
+            'roles'   => $this->em->getRepository(Role::class)->findAll(),
         ]);
     }
 
     public function invite(
         Project $project,
         string $email,
-        ?string $roleStr,
-        string $csrfToken
+        string $roleId,
+        string $csrfToken,
     ): array {
         // CSRF
         if (!$this->isValidCsrf('invite_member_' . $project->getId(), $csrfToken)) {
@@ -47,8 +48,6 @@ class AccessService
             return ['ok' => false, 'message' => 'Email required', 'code' => 422];
         }
 
-        $role = $this->normalizeRole($roleStr);
-
         if ($this->em->getRepository(ProjectUser::class)->memberExists($project, $email)) {
             return ['ok' => false, 'message' => 'This email is already added.', 'code' => 422];
         }
@@ -57,6 +56,8 @@ class AccessService
 
         $pu->setProject($project);
         $pu->setEmail($email);
+
+        $role = $this->em->getRepository(Role::class)->find($roleId);
         $pu->setRole($role);
 
         /** @var User|null $user */
@@ -80,8 +81,8 @@ class AccessService
     public function changeRole(
         Project $project,
         ProjectUser $member,
-        ?string $roleStr,
-        string $csrfToken
+        string $roleId,
+        string $csrfToken,
     ): array {
         if ($member->getProject()->getId() !== $project->getId()) {
             return ['ok' => false, 'message' => 'Not found', 'code' => 404];
@@ -91,7 +92,7 @@ class AccessService
             return ['ok' => false, 'message' => 'Invalid CSRF', 'code' => 403];
         }
 
-        $role = $this->normalizeRole($roleStr);
+        $role = $this->em->getRepository(Role::class)->find($roleId);
         $member->setRole($role);
 
         $this->em->flush();
@@ -134,15 +135,6 @@ class AccessService
 
         foreach ($tickets as $ticket) {
             $ticket->setAssignedTo(null);
-        }
-    }
-
-    private function normalizeRole(?string $roleStr): ProjectRoleEnum
-    {
-        try {
-            return ProjectRoleEnum::fromString((string) $roleStr);
-        } catch (\Throwable $e) {
-            return ProjectRoleEnum::MEMBER;
         }
     }
 

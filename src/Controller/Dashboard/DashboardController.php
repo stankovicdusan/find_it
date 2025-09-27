@@ -21,6 +21,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 class DashboardController extends BaseController
 {
     #[Route(path: '', name: 'index', methods: ["GET"])]
+    #[IsGranted('PROJECT_MEMBER', subject: 'project')]
     public function index(
         #[MapEntity(mapping: ['key' => 'key'])] Entity\Project $project,
         EntityManagerInterface $em,
@@ -59,6 +60,7 @@ class DashboardController extends BaseController
     }
 
     #[Route('/board/search', name: 'board_search', methods: ['GET'])]
+    #[IsGranted('PROJECT_MEMBER', subject: 'project')]
     public function searchBoard(
         Request $request,
         #[MapEntity(mapping: ['key' => 'key'])] Entity\Project $project,
@@ -70,8 +72,10 @@ class DashboardController extends BaseController
     }
 
     #[Route(path: '/move', name: 'ticket_move', methods: ["POST"])]
+    #[IsGranted('PROJECT_MEMBER', subject: 'project')]
     public function ticketMove(
         Request $req,
+        #[MapEntity(mapping: ['key' => 'key'])] Entity\Project $project,
         TicketService $ticketService,
         EntityManagerInterface $em,
     ): JsonResponse {
@@ -88,13 +92,53 @@ class DashboardController extends BaseController
 
         $ticketService->moveTicket($ticket, $to, $order);
 
-        return new JsonResponse(['ok' => true]);
+        $tickets = $em->getRepository(Entity\Ticket::class)->findCompletedBacklogByProject($project);
+
+        return new JsonResponse([
+            'ok' => true,
+            'htmlCompleted' => $this->renderView('dashboard/sprint_backlog/backlog_list.html.twig', [
+                'project' => $project,
+                'tickets' => $tickets,
+            ]),
+            'htmlOthers' => $this->renderView('dashboard/sprint_backlog/backlog_list.html.twig', [
+                'project' => $project,
+                'tickets' => $em->getRepository(Entity\Ticket::class)->findBacklogByProject($project),
+            ]),
+            'countOfCompletedTickets' => count($tickets),
+        ]);
+    }
+
+    #[Route(path: '/change-assignee', name: 'ticket_change_assignee', methods: ["POST"])]
+    #[IsGranted('PROJECT_MEMBER', subject: 'project')]
+    public function changeTicketAssignee(
+        Request $req,
+        #[MapEntity(mapping: ['key' => 'key'])] Entity\Project $project,
+        TicketService $ticketService,
+        EntityManagerInterface $em,
+    ): JsonResponse {
+        $ticketId = (int) $req->request->get('ticketId');
+        $userId   = (int) $req->request->get('userId');
+
+        $ticket = $em->getRepository(Entity\Ticket::class)->find($ticketId);
+        $user   = $em->getRepository(Entity\User::class)->find($userId);
+
+        $ticketService->changeAssignee($ticket, $user);
+
+        return new JsonResponse([
+            'ok' => true,
+            'html' => $this->renderView('dashboard/sprint_backlog/backlog_list.html.twig', [
+                'project' => $project,
+                'tickets' => $em->getRepository(Entity\Ticket::class)->findBacklogByProject($project),
+            ]),
+        ]);
     }
 
     #[Route('/ticket/{id}/modal', name: 'ticket_modal', methods: ['GET'])]
+    #[IsGranted('PROJECT_MEMBER', subject: 'project')]
     public function ticketModal(
         #[MapEntity(mapping: ['key' => 'key'])] Entity\Project $project,
         Entity\Ticket $ticket,
+        EntityManagerInterface $em,
     ): Response {
         $form = $this->createForm(TicketCommentType::class);
 
@@ -105,18 +149,22 @@ class DashboardController extends BaseController
         }
 
         return $this->render('dashboard/tickets/ticket_modal.html.twig', [
-            'project'     => $project,
-            'ticket'      => $ticket,
-            'commentForm' => $form->createView(),
-            'allowedTo'   => $allowedTo,
+            'project'      => $project,
+            'ticket'       => $ticket,
+            'commentForm'  => $form->createView(),
+            'allowedTo'    => $allowedTo,
+            'projectUsers' => $em->getRepository(Entity\ProjectUser::class)->getProjectMembers($project),
         ]);
     }
 
     #[Route('/ticket/new', name: 'ticket_create_form', methods: ['GET'])]
+    #[IsGranted('PROJECT_MEMBER', subject: 'project')]
     public function viewForm(
         #[MapEntity(mapping: ['key' => 'key'])] Entity\Project $project,
     ): Response {
-        $form = $this->createForm(TicketType::class);
+        $form = $this->createForm(TicketType::class, null, [
+            'project' => $project,
+        ]);
 
         return $this->render('dashboard/tickets/create_ticket_modal.html.twig', [
             'project' => $project,
@@ -125,6 +173,7 @@ class DashboardController extends BaseController
     }
 
     #[Route('/ticket/new', name: 'ticket_create_submit', methods: ['POST'])]
+    #[IsGranted('PROJECT_MEMBER', subject: 'project')]
     public function createSubmit(
         Request $request,
         #[MapEntity(mapping: ['key' => 'key'])] Entity\Project $project,
@@ -136,6 +185,7 @@ class DashboardController extends BaseController
         $form = $this->createForm(TicketType::class, $ticket, [
             'action' => $this->generateUrl('dashboard_ticket_create_submit', ['key' => $project->getKey()]),
             'method' => 'POST',
+            'project' => $project,
         ])->handleRequest($request);
 
         if (!$form->isSubmitted() || !$form->isValid()) {
@@ -148,22 +198,16 @@ class DashboardController extends BaseController
             ], 422);
         }
 
-        $ticketService->createTicket($ticket, $project, $this->getUser());
+        $ticketService->createTicket($ticket, $project, $this->getLoggedInUser());
 
-        $status = $ticket->getStatus();
-
-        $tickets = $em->getRepository(Entity\Ticket::class)->findBy(['status' => $status], ['order' => 'ASC']);
-
-        $ticketsHtml = $this->renderView('dashboard/tickets/ticket_items.html.twig', [
+        $ticketsHtml = $this->renderView('dashboard/sprint_backlog/backlog_list.html.twig', [
             'project' => $project,
-            'tickets' => $tickets,
+            'tickets' => $em->getRepository(Entity\Ticket::class)->findBacklogByProject($project),
         ]);
 
         return new JsonResponse([
-            'ok'         => true,
-            'statusId'   => $status->getId(),
-            'ticketsHtml'=> $ticketsHtml,
-            'badgeCount' => \count($tickets),
+            'ok'          => true,
+            'ticketsHtml' => $ticketsHtml,
         ]);
     }
 }

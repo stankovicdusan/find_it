@@ -16,8 +16,8 @@
                     <tr>
                         <td>
                             <a href="#" class="text-decoration-none js-open-ticket"
-                               data-ticket-id="{{ t.id }}"
-                               data-url="{{ path('dashboard_ticket_modal', { key: project.key, id: t.id }) }}">
+                               data-url="{{ path('dashboard_ticket_modal', { key: project.key, id: t.id }) }}"
+                               data-ticket-id="{{ t.id }}">
                                 {{ t.title }}
                             </a>
                         </td>
@@ -32,7 +32,7 @@
                                 <span class="badge text-bg-success ms-1">Final</span>
                             {% endif %}
                         </td>
-                        <td class="text-end text-muted small">{{ t.updatedAt|date('Y-m-d H:i') }}</td>
+                        <td class="text-end text-muted small">{{ t.updatedAt|date('d.m.Y H:i') }}</td>
                     </tr>
                 {% else %}
                     <tr><td colspan="5" class="text-muted p-3">Backlog is empty.</td></tr>

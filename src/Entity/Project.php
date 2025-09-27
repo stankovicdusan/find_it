@@ -91,13 +91,4 @@ class Project
     {
         return TemplateEnum::SCRUM->value === $this->getTemplate()->getId();
     }
-
-    public function getBoardName(): string
-    {
-        if (TemplateEnum::KANBAN->value === $this->getTemplate()->getId()) {
-            return 'Kanban Board';
-        } else {
-            return 'Sprint Board';
-        }
-    }
 }

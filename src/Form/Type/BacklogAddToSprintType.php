@@ -55,6 +55,7 @@ class BacklogAddToSprintType extends AbstractType
                         ->innerJoin('wf.project', 'p')
                         ->andWhere('p = :project')->setParameter('project', $project)
                         ->andWhere('sp IS NULL')
+                        ->andWhere('st.isFinal = :final')->setParameter('final', false)
                         ->orderBy('t.updatedAt', 'DESC');
                 },
             ])

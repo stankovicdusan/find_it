@@ -1,0 +1,31 @@
+<div id="ticketAssigneeBox"
+     class="mb-3"
+     data-ticket-id="{{ ticket.id }}"
+     data-change-url="{{ path('dashboard_ticket_change_assignee', { key: project.key }) }}"
+     data-csrf="{{ csrf_token('ticket_change_assignee_' ~ ticket.id) }}"
+>
+    <div class="dropdown">
+        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown">
+            Assignee: <strong>{{ ticket.assignedTo ? ticket.assignedTo.email : 'Unassigned' }}</strong>
+        </button>
+
+        <ul class="dropdown-menu">
+            {% for pu in projectUsers %}
+                <li>
+                    <a href="#"
+                       class="dropdown-item js-ticket-change-assignee"
+                       data-user-id="{{ pu.user.id }}">
+                        {{ pu.email }}
+                    </a>
+                </li>
+            {% endfor %}
+            <li>
+                <a href="#"
+                   class="dropdown-item js-ticket-change-assignee"
+                   data-user-id="">
+                    Unassigned
+                </a>
+            </li>
+        </ul>
+    </div>
+</div>

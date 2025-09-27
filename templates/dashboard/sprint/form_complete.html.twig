@@ -8,7 +8,21 @@
     <p class="mb-2">Complete sprint <strong>{{ sprint.name }}</strong>?</p>
     <div class="alert alert-info">Incomplete tickets will be moved per your selection below.</div>
 
-    {{ form_row(form.incompleteStrategy) }}
+    <ul class="list-group">
+        {% for c in form.incompleteStrategy %}
+            <li class="list-group-item d-flex align-items-start">
+                {{ form_widget(c, { attr: { class: 'form-check-input me-3 mt-1' } }) }}
+                <div>
+                    <div class="fw-semibold">{{ c.vars.label }}</div>
+                    {% if c.vars.attr['data-help'] is defined %}
+                        <div class="small text-muted">{{ c.vars.attr['data-help'] }}</div>
+                    {% endif %}
+                </div>
+            </li>
+        {% endfor %}
+    </ul>
+    {{ form_errors(form.incompleteStrategy) }}
+
     {{ form_row(form.nextSprint) }}
 </div>
 

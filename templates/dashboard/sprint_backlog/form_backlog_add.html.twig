@@ -4,6 +4,10 @@
 </div>
 
 {{ form_start(form, {attr: { class: 'js-ajax-form', 'data-refresh-target': '#backlogWrap' }}) }}
+{% if form._token is defined %}
+    {{ form_widget(form._token) }}
+{% endif %}
+
 <div class="modal-body">
     <div class="mb-3">
         {{ form_label(form.sprint) }}
@@ -25,10 +29,9 @@
         {{ form_errors(form.tickets) }}
         <div class="form-text">Only tickets currently in backlog are listed here.</div>
     </div>
-
 </div>
 <div class="modal-footer">
     <button type="button" class="btn btn-light" data-bs-dismiss="modal">Cancel</button>
     <button type="submit" class="btn btn-primary">Add</button>
 </div>
-{{ form_end(form) }}
+{{ form_end(form, { render_rest: false }) }}

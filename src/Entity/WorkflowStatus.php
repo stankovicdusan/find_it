@@ -33,7 +33,7 @@ class WorkflowStatus
     #[ORM\ManyToOne(targetEntity: Workflow::class, inversedBy: 'statuses')]
     private ?Workflow $workflow = null;
 
-    #[ORM\OneToMany(targetEntity: Ticket::class, mappedBy: 'status', cascade: ['remove'])]
+    #[ORM\OneToMany(targetEntity: Ticket::class, mappedBy: 'status')]
     private Collection $tickets;
 
     #[ORM\OneToMany(targetEntity: WorkflowTransition::class, mappedBy: 'fromStatus', cascade: ['persist', 'remove'], orphanRemoval: true)]

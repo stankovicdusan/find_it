@@ -2,6 +2,8 @@
 
 namespace App\Form\Type;
 
+use App\Entity\ProjectUser;
+use App\Enum\MemberStatusEnum;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
@@ -52,7 +54,7 @@ class TicketType extends AbstractType
                 'label' => 'Description',
                 'required' => false,
                 'attr'  => [
-                    'class' => 'form-control tinymce',
+                    'class' => 'form-control',
                     'rows' => 3,
                 ],
             ])
@@ -65,6 +67,18 @@ class TicketType extends AbstractType
                 'attr'         => [
                     'class' => 'form-select',
                 ],
+                'query_builder' => function (EntityRepository $er) use ($project) {
+                    return $er->createQueryBuilder('u')
+                        ->andWhere('u IN (
+                            SELECT pu_user FROM App\Entity\ProjectUser pu
+                            JOIN pu.user pu_user
+                            WHERE pu.project = :project
+                              AND pu.status = :active
+                        )')
+                        ->setParameter('project', $project)
+                        ->setParameter('active', MemberStatusEnum::ACTIVE)
+                        ->orderBy('u.email', 'ASC');
+                },
             ]);
     }
 

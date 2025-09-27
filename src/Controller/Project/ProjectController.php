@@ -12,7 +12,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpKernel\Attribute\MapRequestPayload;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\IsGranted;
 
 #[Route(path: '/projects')]
 class ProjectController extends BaseController
@@ -20,7 +19,7 @@ class ProjectController extends BaseController
     #[Route(path: '', name: 'projects_index', methods: ["GET"])]
     public function index(EntityManagerInterface $em): Response
     {
-        $projects = $em->getRepository(Entity\Project::class)->findForUser($this->getUser());
+        $projects = $em->getRepository(Entity\Project::class)->findForUser($this->getLoggedInUser());
 
         return $this->render('projects/index.html.twig', [
             'projects' => $projects,

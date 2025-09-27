@@ -3,6 +3,9 @@
 
 {% block javascripts %}
     {{ parent() }}
+    <link  rel="stylesheet" href="https://code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.min.js"></script>
+
     <script src="{{ asset('js/workflows.js') }}"></script>
 {% endblock %}
 
@@ -25,7 +28,11 @@
             <div class="col-1 text-end">Action</div>
         </div>
 
-        <div id="statusesList">
+        <div id="statusesList"
+             class="js-statuses"
+             data-sort-url="{{ path('workflow_status_reorder', { key: project.key }) }}"
+             data-csrf="{{ csrf_token('workflow_status_reorder_' ~ project.id) }}"
+        >
             {% include 'dashboard/workflows/statuses_list.html.twig' with { project: project, statuses: project.workflow.statuses } %}
         </div>
     </div>

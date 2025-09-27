@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity;
 use App\Enum\ProjectRoleEnum;
+use App\Enum\RoleEnum;
 use App\Model\Dto\CreateProjectDto;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -40,7 +41,9 @@ class ProjectService
         $projectUser->setProject($project);
         $projectUser->setUser($user);
         $projectUser->setEmail($user->getEmail());
-        $projectUser->setRole(ProjectRoleEnum::ADMIN);
+
+        $role = $this->em->getRepository(Entity\Role::class)->find(RoleEnum::ADMIN->value);
+        $projectUser->setRole($role);
 
         $this->em->persist($projectUser);
         $this->em->flush();

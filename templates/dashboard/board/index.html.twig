@@ -7,6 +7,7 @@
 
     <script src="{{ asset('js/status_transitions.js') }}"></script>
     <script src="{{ asset('js/board.js') }}"></script>
+    <script src="{{ asset('js/comments.js') }}"></script>
 {% endblock %}
 
 {% block content %}
@@ -37,11 +38,6 @@
                     <button class="btn btn-link" id="boardSearchClear" type="button" title="Clear">&times;</button>
                 </form>
             </div>
-            <button type="button"
-                    class="btn btn-primary js-create-ticket"
-                    data-url="{{ path('dashboard_ticket_create_form', { key: project.key }) }}">
-                Create Ticket
-            </button>
         </div>
 
         <div id="boardGrid"
@@ -52,23 +48,4 @@
         </div>
     </div>
 
-    <div class="modal fade" id="ticketModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-scrollable">
-            <div class="modal-content" id="ticketModalContent"></div>
-        </div>
-    </div>
-
-    <div class="modal fade" id="createTicketModal" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-lg">
-            <div class="modal-content" id="createTicketModalContent"></div>
-        </div>
-    </div>
-
-    <script>
-        tinymce.init({
-            selector: 'textarea.tinymce',
-            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
-            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
-        });
-    </script>
 {% endblock %}

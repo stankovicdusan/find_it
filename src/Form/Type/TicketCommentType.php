@@ -18,7 +18,7 @@ class TicketCommentType extends AbstractType
             'attr' => [
                 'rows'        => 3,
                 'placeholder' => 'Write a comment…',
-                'class'       => 'form-control tinymce',
+                'class'       => 'form-control',
             ],
             'constraints' => [
                 new Assert\NotBlank(message: 'Comment cannot be empty.'),

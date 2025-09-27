@@ -7,17 +7,22 @@
     </div>
     <ul class="nav flex-column px-2" id="nav-planning-menu">
         <li class="nav-item">
-            <a class="nav-link {% if 'summary' == activeMenu %}text-primary{% else %}text-dark{% endif %}" href="{{ path('dashboard_summary', {key: project.key}) }}"><i class="bi bi-pie-chart"></i> Summary</a>
+            <a class="nav-link {% if 'summary' == activeMenu %}text-primary{% else %}text-dark{% endif %}"
+               href="{{ path('dashboard_summary', {key: project.key}) }}"><i class="bi bi-pie-chart"></i> Summary</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link {% if 'board' == activeMenu %}text-primary{% else %}text-dark{% endif %}" href="{{ path('dashboard_index', {key: project.key}) }}"><i class="bi bi-{{ project.isScrumProject ? 'flag' : 'kanban' }}"></i> {{ project.boardName }}</a>
+            <a class="nav-link {% if 'board' == activeMenu %}text-primary{% else %}text-dark{% endif %}"
+               href="{{ path('dashboard_index', {key: project.key}) }}"><i class="bi bi-flag"></i> Board</a>
         </li>
         <li class="nav-item">
-            <a class="nav-link {% if 'backlog' == activeMenu %}text-primary{% else %}text-dark{% endif %}" href="{{ path('backlog_index', {key: project.key}) }}"><i class="bi bi-kanban"></i> Backlog</a>
+            <a class="nav-link {% if 'backlog' == activeMenu %}text-primary{% else %}text-dark{% endif %}"
+               href="{{ path('backlog_index', {key: project.key}) }}"><i class="bi bi-kanban"></i> Backlog</a>
         </li>
         {% if project.isScrumProject %}
             <li class="nav-item">
-                <a class="nav-link {% if 'sprints' == activeMenu %}text-primary{% else %}text-dark{% endif %}" href="{{ path('sprints_index', {key: project.key}) }}"><i class="bi bi-calendar-week"></i> Sprints</a>
+                <a class="nav-link {% if 'sprints' == activeMenu %}text-primary{% else %}text-dark{% endif %}"
+                   href="{{ path('sprints_index', {key: project.key}) }}"><i class="bi bi-calendar-week"></i>
+                    Sprints</a>
             </li>
         {% endif %}
     </ul>
@@ -28,10 +33,13 @@
         </div>
         <ul class="nav flex-column px-2" id="nav-settings-menu">
             <li class="nav-item">
-                <a class="nav-link {% if 'workflows' == activeMenu %}text-primary{% else %}text-dark{% endif %}" href="{{ path('workflow_status_index', {key: project.key}) }}"><i class="bi bi-diagram-3"></i> Workflows</a>
+                <a class="nav-link {% if 'workflows' == activeMenu %}text-primary{% else %}text-dark{% endif %}"
+                   href="{{ path('workflow_status_index', {key: project.key}) }}"><i class="bi bi-diagram-3"></i>
+                    Workflows</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {% if 'access' == activeMenu %}text-primary{% else %}text-dark{% endif %}" href="{{ path('dashboard_access', {key: project.key}) }}"><i class="bi bi-people"></i> Access</a>
+                <a class="nav-link {% if 'access' == activeMenu %}text-primary{% else %}text-dark{% endif %}"
+                   href="{{ path('dashboard_access', {key: project.key}) }}"><i class="bi bi-people"></i> Access</a>
             </li>
         </ul>
     {% endif %}

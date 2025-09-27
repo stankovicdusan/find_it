@@ -4,7 +4,6 @@ namespace App\Controller\Dashboard\Backlog;
 
 use App\Controller\BaseController;
 use App\Entity\Project;
-use App\Entity\Sprint;
 use App\Entity\Ticket;
 use App\Form\Type\BacklogAddToSprintType;
 use App\Repository\TicketRepository;
@@ -27,10 +26,10 @@ class BacklogController extends BaseController
         EntityManagerInterface $em,
     ): Response {
         return $this->render('dashboard/sprint_backlog/index.html.twig', [
-            'project'        => $project,
-            'tickets'        => $em->getRepository(Ticket::class)->findBacklogForProject($project),
-            'plannedSprints' => $em->getRepository(Sprint::class)->findPlannedForProject($project),
-            'activeMenu'     => 'backlog',
+            'project'          => $project,
+            'tickets'          => $em->getRepository(Ticket::class)->findBacklogByProject($project),
+            'completedTickets' => $em->getRepository(Ticket::class)->findCompletedBacklogByProject($project),
+            'activeMenu'       => 'backlog',
         ]);
     }
 
@@ -41,12 +40,13 @@ class BacklogController extends BaseController
         TicketRepository $ticketRepo
     ): Response {
         return $this->render('dashboard/sprint_backlog/backlog_list.html.twig', [
-            'project'   => $project,
-            'tickets'   => $ticketRepo->findBacklogForProject($project),
+            'project' => $project,
+            'tickets' => $ticketRepo->findBacklogByProject($project),
         ]);
     }
 
     #[Route('/form/add', name: 'form_add', methods: ['GET'])]
+    #[IsGranted('PROJECT_MANAGER', subject: 'project')]
     public function formBacklogAdd(
         #[MapEntity(mapping: ['key' => 'key'])] Project $project
     ): Response {
@@ -62,6 +62,7 @@ class BacklogController extends BaseController
     }
 
     #[Route('/add', name: 'add', methods: ['POST'])]
+    #[IsGranted('PROJECT_MANAGER', subject: 'project')]
     public function backlogAdd(
         Request $request,
         #[MapEntity(mapping: ['key' => 'key'])] Project $project,
@@ -87,5 +88,4 @@ class BacklogController extends BaseController
 
         return new JsonResponse(['ok' => true]);
     }
-
 }

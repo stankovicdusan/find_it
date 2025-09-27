@@ -46,6 +46,9 @@ final class SprintCompleteType extends AbstractType
                     ->andWhere('s.state = :st')->setParameter('st', SprintStateEnum::PLANNED)
                     ->orderBy('s.plannedStartAt', 'ASC');
             },
+            'attr' => [
+                'class' => 'form-control',
+            ],
         ]);
     }
 

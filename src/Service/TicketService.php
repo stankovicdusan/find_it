@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity;
 use App\Entity\Ticket;
+use App\Entity\User;
 use App\Entity\Workflow;
 use App\Entity\WorkflowStatus;
 use Doctrine\ORM\EntityManagerInterface;
@@ -69,6 +70,13 @@ class TicketService
                 $ticket->setOrder($this->em->getRepository(Ticket::class)->getNextOrderBasedOnStatus($ticket));
             }
         }
+
+        $this->em->flush();
+    }
+
+    public function changeAssignee(Ticket $ticket, ?User $user): void
+    {
+        $ticket->setAssignedTo($user);
 
         $this->em->flush();
     }

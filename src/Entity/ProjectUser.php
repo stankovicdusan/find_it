@@ -4,7 +4,6 @@ namespace App\Entity;
 
 use App\Entity\Traits\Uniqueable;
 use App\Enum\MemberStatusEnum;
-use App\Enum\ProjectRoleEnum;
 use App\Repository\ProjectUserRepository;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -23,11 +22,12 @@ class ProjectUser
     #[ORM\JoinColumn(nullable: true, onDelete: 'SET NULL')]
     private ?User $user = null;
 
+    #[ORM\ManyToOne(targetEntity: Role::class)]
+    #[ORM\JoinColumn(nullable: false)]
+    private Role $role;
+
     #[ORM\Column(length: 190)]
     private string $email;
-
-    #[ORM\Column(type: 'string', length: 20, enumType: ProjectRoleEnum::class)]
-    private ProjectRoleEnum $role = ProjectRoleEnum::MEMBER;
 
     #[ORM\Column(type: 'string', length: 20, enumType: MemberStatusEnum::class)]
     private MemberStatusEnum $status = MemberStatusEnum::ACTIVE;
@@ -62,12 +62,12 @@ class ProjectUser
         $this->email = $email;
     }
 
-    public function getRole(): ProjectRoleEnum
+    public function getRole(): Role
     {
         return $this->role;
     }
 
-    public function setRole(ProjectRoleEnum $role): void
+    public function setRole(Role $role): void
     {
         $this->role = $role;
     }

@@ -19,6 +19,8 @@ class WorkflowService
         $workflow->setTitle($project->getTitle() . ' Workflow');
         $workflow->setProject($project);
 
+        $statuses = [];
+
         $order = 1;
         foreach (DefaultWorkflowStatusEnum::cases() as $statusEnum) {
             $status = new Entity\WorkflowStatus();
@@ -40,7 +42,7 @@ class WorkflowService
 
         foreach ($statuses as $from) {
             foreach ($statuses as $to) {
-                if ($from !== $to) {
+                if ($from !== $to && !$to->isFinal()) {
                     $transition = new Entity\WorkflowTransition();
                     $transition->setFromStatus($from);
                     $transition->setToStatus($to);

@@ -5,6 +5,7 @@ namespace App\Controller\Dashboard\Access;
 use App\Entity;
 use App\Controller\BaseController;
 use App\Service\AccessService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -19,11 +20,13 @@ class AccessController extends BaseController
     #[Route('', name: 'access', methods: ['GET'])]
     public function index(
         #[MapEntity(mapping: ['key' => 'key'])] Entity\Project $project,
+        EntityManagerInterface $em,
     ): Response {
         return new Response(
             $this->renderView('dashboard/access/index.html.twig', [
                 'project'    => $project,
                 'activeMenu' => 'access',
+                'roles'      => $em->getRepository(Entity\Role::class)->findAll(),
             ]),
         );
     }

@@ -59,36 +59,50 @@ class WorkflowStatusController extends BaseController
         return $workflowStatusService->handleSave($request, $project, $status);
     }
 
-    #[Route(
-        path: '/status/{status}/delete',
-        name: 'delete',
-        methods: ['POST']
-    )]
-    public function deleteStatus(
+    #[Route('/status/{status}/delete-check', name: 'delete_check', methods: ['GET'])]
+    public function deleteCheck(
         #[MapEntity(mapping: ['key' => 'key'])] Entity\Project $project,
         Entity\WorkflowStatus $status,
+        WorkflowStatusService $service
+    ): JsonResponse {
+        $res = $service->prepareDelete($project, $status);
+        $code = $res['code'] ?? 200;
+
+        return new JsonResponse($res, $code);
+    }
+
+    #[Route('/status/{status}/delete', name: 'delete', methods: ['POST'])]
+    public function delete(
+        Request $req,
+        #[MapEntity(mapping: ['key' => 'key'])] Entity\Project $project,
+        Entity\WorkflowStatus $status,
+        WorkflowStatusService $service,
+    ): JsonResponse {
+        $targetId = $req->request->getInt('targetStatusId') ?: null;
+        $token    = (string) $req->request->get('_token', '');
+
+        $res  = $service->delete($project, $status, $targetId, $token);
+        $code = $res['code'] ?? ($res['ok'] ? 200 : 422);
+
+        return new JsonResponse($res, $code);
+    }
+
+    #[Route(
+        path: '/reorder',
+        name: 'reorder',
+        methods: ['POST']
+    )]
+    public function sortStatuses(
+        Request $req,
+        #[MapEntity(mapping: ['key' => 'key'])] Entity\Project $project,
         WorkflowStatusService $workflowStatusService
-    ): Response {
-        if ($status->getWorkflow()->getProject() !== $project) {
-            return new JsonResponse(['message' => 'Status does not belong to this project.'], 403);
-        }
+    ): JsonResponse {
+        $ids  = $req->request->all('ids');
+        $csrf = (string) $req->request->get('_token', '');
 
-        $statusId = $status->getId();
-        try {
-            $workflowStatusService->deleteIfEmpty($status);
-        } catch (\RuntimeException $e) {
-            return new JsonResponse(['message' => $e->getMessage()], 409);
-        }
+        $res  = $workflowStatusService->sortStatuses($project, $ids, $csrf);
+        $code = $res['code'] ?? ($res['ok'] ? 200 : 422);
 
-        $statuses = $project->getWorkflow()->getStatuses();
-
-        return new JsonResponse([
-            'ok'   => true,
-            'html' => $this->renderView('dashboard/workflows/statuses_list.html.twig', [
-                'project'  => $project,
-                'statuses' => $statuses,
-            ]),
-            'currentStatus' => $statusId,
-        ]);
+        return new JsonResponse($res, $code);
     }
 }

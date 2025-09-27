@@ -10,7 +10,9 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Security\Http\Attribute\IsGranted;
 
+#[IsGranted("ROLE_USER")]
 class TicketCommentController extends BaseController
 {
     #[Route('/ticket/{id}/comment', name: 'ticket_comment_create', methods: ['POST'])]
@@ -35,7 +37,7 @@ class TicketCommentController extends BaseController
             ], 422);
         }
 
-        $comment->setCreatedBy($this->getUser());
+        $comment->setCreatedBy($this->getLoggedInUser());
         $comment->setTicket($ticket);
 
         $em->persist($comment);

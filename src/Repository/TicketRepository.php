@@ -88,17 +88,6 @@ class TicketRepository extends ServiceEntityRepository
             ->getQuery()->getResult();
     }
 
-    public function findBacklogForProject(Project $project): array
-    {
-        return $this->qbForProject($project)
-            ->leftJoin('t.sprint', 'sp')
-            ->andWhere('sp IS NULL')
-            ->leftJoin('t.issueType','it')->addSelect('it')
-            ->leftJoin('t.assignedTo','u')->addSelect('u')
-            ->orderBy('t.updatedAt', 'DESC')
-            ->getQuery()->getResult();
-    }
-
     public function findBySprint(Sprint $sprint): array
     {
         return $this->createQueryBuilder('t')
@@ -129,6 +118,24 @@ class TicketRepository extends ServiceEntityRepository
         return $this->qbForProject($project)
             ->andWhere('t.assignedTo = :user')
             ->setParameter('user', $user)
+            ->getQuery()->getResult();
+    }
+
+    public function findBacklogByProject(Project $project): array
+    {
+        return $this->qbForProject($project)
+            ->leftJoin('t.sprint', 'sp')
+            ->andWhere('sp IS NULL')
+            ->andWhere('st.isFinal = :f')->setParameter('f', false)
+            ->orderBy('t.updatedAt', 'DESC')
+            ->getQuery()->getResult();
+    }
+
+    public function findCompletedBacklogByProject(Project $project): array
+    {
+        return $this->qbForProject($project)
+            ->andWhere('st.isFinal = :f')->setParameter('f', true)
+            ->orderBy('t.updatedAt', 'DESC')
             ->getQuery()->getResult();
     }
 

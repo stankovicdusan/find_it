@@ -14,6 +14,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
+use Symfony\Component\Security\Csrf\CsrfToken;
+use Symfony\Component\Security\Csrf\CsrfTokenManagerInterface;
 use Twig\Environment;
 
 class WorkflowStatusService
@@ -23,6 +25,7 @@ class WorkflowStatusService
         private readonly FormFactoryInterface $forms,
         private readonly Environment $twig,
         private readonly UrlGeneratorInterface $urlGenerator,
+        private readonly CsrfTokenManagerInterface $csrf,
     ) {
     }
 
@@ -161,20 +164,130 @@ class WorkflowStatusService
         $this->em->refresh($status);
     }
 
-    public function deleteIfEmpty(WorkflowStatus $status): void
+    public function prepareDelete(Project $project, WorkflowStatus $status): array
     {
-        $count = $status->getWorkflow()->getStatuses()->count();
-
-        if ($count <= 2) {
-            throw new DomainException('Workflow must have at least 2 statuses.');
+        if ($status->getWorkflow()->getProject()->getId() !== $project->getId()) {
+            return ['ok' => false, 'message' => 'Not found', 'code' => 404];
         }
 
-        if ($status->getTickets()->count() > 0) {
-            throw new \RuntimeException('Cannot delete: this status has tickets.');
+        if ($status->isInitial() || $status->isFinal()) {
+            $msg = $status->isInitial()
+                ? 'Initial status cannot be deleted.'
+                : 'Final status cannot be deleted.';
+
+            return ['ok' => false, 'message' => $msg, 'code' => 422];
+        }
+
+        $ticketsCount = $status->getTickets()->count();
+        if ($ticketsCount === 0) {
+            return ['ok' => true, 'canDelete' => true];
+        }
+
+        $other = [];
+        foreach ($status->getWorkflow()->getStatuses() as $s) {
+            if ($s->getId() !== $status->getId()) $other[] = $s;
+        }
+
+        $html = $this->twig->render('dashboard/workflows/status_delete_reassign.html.twig', [
+            'status'        => $status,
+            'ticketsCount'  => $ticketsCount,
+            'otherStatuses' => $other,
+            'postUrl'       => $this->urlGenerator->generate('workflow_status_delete', [
+                'key'    => $project->getKey(),
+                'status' => $status->getId(),
+            ]),
+        ]);
+
+        return ['ok' => true, 'needsReassign' => true, 'html' => $html];
+    }
+
+    public function delete(Project $project, WorkflowStatus $status, ?int $targetStatusId, ?string $csrfToken): array
+    {
+        if (!$this->csrf->isTokenValid(new CsrfToken('workflow_status_delete_' . $status->getId(), (string) $csrfToken))) {
+            return ['ok' => false, 'message' => 'Invalid CSRF', 'code' => 403];
+        }
+
+        if ($status->isInitial() || $status->isFinal()) {
+            $msg = $status->isInitial()
+                ? 'Initial status cannot be deleted.'
+                : 'Final status cannot be deleted.';
+
+            return ['ok' => false, 'message' => $msg, 'code' => 422];
+        }
+
+        $all = $status->getWorkflow()->getStatuses();
+        if ($all->count() <= 2) {
+            return ['ok' => false, 'message' => 'At least 2 statuses required.', 'code' => 422];
+        }
+
+        if ($status->getWorkflow()->getProject()->getId() !== $project->getId()) {
+            return ['ok' => false, 'message' => 'Not found', 'code' => 404];
+        }
+
+        $tickets = $status->getTickets();
+        if ($tickets->count() > 0) {
+            if (!$targetStatusId) {
+                return ['ok' => false, 'message' => 'Target status required.', 'code' => 422];
+            }
+
+            $target = null;
+            foreach ($all as $s) {
+                if ($s->getId() === $targetStatusId) { $target = $s; break; }
+            }
+
+            if (!$target || $target->getId() === $status->getId()) {
+                return ['ok' => false, 'message' => 'Invalid target status.', 'code' => 422];
+            }
+
+            foreach ($tickets as $t) {
+                $t->setStatus($target);
+            }
         }
 
         $this->em->remove($status);
         $this->em->flush();
+
+        $html = $this->twig->render('dashboard/workflows/statuses_list.html.twig', [
+            'project'  => $project,
+            'statuses' => $project->getWorkflow()->getStatuses(),
+        ]);
+
+        return ['ok' => true, 'html' => $html];
+    }
+
+    public function sortStatuses(Project $project, array $ids, string $csrfToken): array
+    {
+        if (!$this->csrf->isTokenValid(new CsrfToken('workflow_status_reorder_' . $project->getId(), $csrfToken))) {
+            return ['ok' => false, 'message' => 'Invalid CSRF', 'code' => 403];
+        }
+
+        $ids = array_values(array_unique(array_map('intval', $ids)));
+        if (!$ids) {
+            return ['ok' => false, 'message' => 'No items', 'code' => 422];
+        }
+
+        $statuses = $this->em->getRepository(WorkflowStatus::class)->getSortedStatuses($project);
+        $byId = [];
+        foreach ($statuses as $s) {
+            $byId[$s->getId()] = $s;
+        }
+
+        $order = 0;
+        foreach ($ids as $id) {
+            if (isset($byId[$id])) {
+                $byId[$id]->setSortOrder($order++);
+            }
+        }
+
+        foreach ($statuses as $s) {
+            if (!in_array($s->getId(), $ids, true)) {
+                $s->setSortOrder($order++);
+            }
+        }
+
+        $this->em->flush();
+
+        return ['ok' => true];
     }
 
     private function getWorkflowStatus(Workflow $workflow, ?WorkflowStatus $status = null): WorkflowStatus

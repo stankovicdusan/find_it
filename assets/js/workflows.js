@@ -68,49 +68,144 @@ $(document).ready(function () {
     let deleteTarget = null;
 
     $(document).on('click', '.js-delete-status', function () {
-        const count = $('#statusesList .status-row').length;
+        const $btn   = $(this);
+        const url    = $btn.data('url');
+        const check  = $btn.data('checkUrl');
+        const $row   = $btn.closest('.status-row');
 
-        if (count <= 2) {
+        if ($btn.hasClass('disabled') || $btn.attr('aria-disabled') === 'true') {
+            const t = $btn.attr('title') || 'Action not allowed.';
+            alert(t);
             return;
         }
 
-        deleteTarget = {
-            url: $(this).data('url'),
-            row: $(this).closest('.status-row')
-        };
+        const count = $('#statusesList .status-row').length;
+        if (count <= 2) return;
 
-        $('#confirmDeleteModal').modal('show');
+        deleteTarget = { url, $row };
+
+        $.get(check)
+            .done(function (res) {
+                if (res && res.canDelete) {
+                    $('#confirmDeleteModal').modal('show');
+                    return;
+                }
+
+                if (res && res.html) {
+                    $('#workflowModalContent').html(res.html);
+                    $('#workflowModal').modal('show');
+                } else {
+                    alert(res?.message || 'Unable to prepare deletion.');
+                }
+            })
+            .fail(function (xhr) {
+                alert(xhr.responseJSON?.message || 'Unable to prepare deletion.');
+            });
     });
 
     $(document).on('click', '#confirmDeleteBtn', function () {
         if (!deleteTarget) return;
 
         const count = $('#statusesList .status-row').length;
-
-        if (count <= 2) {
-            return;
-        }
+        if (count <= 2) return;
 
         $.ajax({
             url: deleteTarget.url,
             method: 'POST',
-            dataType: 'json',
-            success: function (res) {
-                if (res.ok) {
+            dataType: 'json'
+        })
+            .done(function (res) {
+                if (res && res.ok) {
                     if (res.html) {
                         $('#statusesList').html(res.html);
-                        highlightRow(res.currentStatus, 'flash-delete')
                     }
-
                     $('#confirmDeleteModal').modal('hide');
                     deleteTarget = null;
+                } else {
+                    alert(res?.message || 'Delete failed.');
                 }
+            })
+            .fail(function (xhr) {
+                alert(xhr.responseJSON?.message || 'Delete failed.');
+            });
+    });
+
+    $(document).on('click', '#confirmReassignDeleteBtn', function () {
+        if (!deleteTarget) return;
+        const $form   = $('#statusReassignForm');
+        const postUrl = $form.data('postUrl');
+        const token   = $form.data('token');
+        const target  = $form.find('[name="targetStatusId"]').val();
+
+        if (!target) {
+            alert('Please choose a target status.');
+            return;
+        }
+
+        $.ajax({
+            url: postUrl,
+            method: 'POST',
+            dataType: 'json',
+            data: { _token: token, targetStatusId: target }
+        })
+            .done(function (res) {
+                if (res && res.ok) {
+                    if (res.html) $('#statusesList').html(res.html);
+                    $('#workflowModal').modal('hide');
+                    deleteTarget = null;
+                } else {
+                    alert(res?.message || 'Reassign & delete failed.');
+                }
+            })
+            .fail(function (xhr) {
+                alert(xhr.responseJSON?.message || 'Reassign & delete failed.');
+            });
+    });
+
+    $(function initWorkflowSorting() {
+        const $wrap = $('#statusesList');
+        if (!$wrap.length || typeof $.fn.sortable !== 'function') return;
+
+        try { $wrap.sortable('destroy'); } catch (e) {}
+
+        $wrap.sortable({
+            items:        '> .status-row',
+            handle:       '.drag-handle',
+            axis:         'y',
+            placeholder:  'status-placeholder',
+            tolerance:    'pointer',
+            forcePlaceholderSize: true,
+            revert:       120,
+
+            start: function (_e, ui) {
+                ui.placeholder.height(ui.item.outerHeight());
             },
-            error: function (xhr) {
-                const msg = (xhr.responseJSON && xhr.responseJSON.message)
-                    ? xhr.responseJSON.message
-                    : 'Delete failed.';
-                alert(msg);
+
+            update: function () {
+                const url   = $wrap.data('sortUrl')  || $wrap.attr('data-sort-url');
+                const csrf  = $wrap.data('csrf')     || $wrap.attr('data-csrf');
+                const ids   = $wrap.children('.status-row').map(function () {
+                    return $(this).data('status-id');
+                }).get();
+
+                if (!url || !ids.length) return;
+
+                $.ajax({
+                    url: url,
+                    method: 'POST',
+                    dataType: 'json',
+                    data: { _token: csrf, ids: ids }
+                })
+                    .done(function (res) {
+                        if (!res || !res.ok) {
+                            flash(res && res.message ? res.message : 'Sort failed.', 'danger');
+                        } else {
+                            flash('Order saved.', 'success');
+                        }
+                    })
+                    .fail(function (xhr) {
+                        (window.App?.ui?.flashError || alert)(xhr.responseJSON?.message || 'Sort failed.');
+                    });
             }
         });
     });
@@ -122,5 +217,11 @@ $(document).ready(function () {
         setTimeout(function () {
             row.removeClass(className);
         }, 1000);
+    }
+
+    function flash(msg, type) {
+        var $box = $('<div class="alert alert-' + (type || 'info') + ' shadow mb-2 position-fixed top-0 start-50 translate-middle-x mt-3" style="z-index:1080;min-width:280px;">' + msg + '</div>');
+        $('body').append($box);
+        setTimeout(function(){ $box.fadeOut(180, function(){ $(this).remove(); }); }, 1800);
     }
 });
