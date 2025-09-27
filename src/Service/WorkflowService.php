@@ -41,8 +41,12 @@ class WorkflowService
         $this->em->flush();
 
         foreach ($statuses as $from) {
+            if ($from->isFinal()) {
+                continue;
+            }
+
             foreach ($statuses as $to) {
-                if ($from !== $to && !$to->isFinal()) {
+                if ($from !== $to) {
                     $transition = new Entity\WorkflowTransition();
                     $transition->setFromStatus($from);
                     $transition->setToStatus($to);
