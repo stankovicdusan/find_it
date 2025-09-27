@@ -19,10 +19,10 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bridge\Doctrine\Attribute\MapEntity;
 
 #[Route('/dashboard/{key}/sprints', name: 'sprints_')]
+#[IsGranted('PROJECT_MANAGER', subject: 'project')]
 class SprintController extends BaseController
 {
     #[Route('', name: 'index', methods: ['GET'])]
-    #[IsGranted('PROJECT_MEMBER', subject: 'project')]
     public function index(
         #[MapEntity(mapping: ['key' => 'key'])] Project $project,
         SprintRepository $repo
@@ -37,7 +37,6 @@ class SprintController extends BaseController
     }
 
     #[Route('/list-partial', name: 'list_partial', methods: ['GET'])]
-    #[IsGranted('PROJECT_MEMBER', subject: 'project')]
     public function listPartial(
         #[MapEntity(mapping: ['key' => 'key'])] Project $project,
         SprintRepository $repo
@@ -51,7 +50,6 @@ class SprintController extends BaseController
     }
 
     #[Route('/form/create', name: 'form_create', methods: ['GET'])]
-    #[IsGranted('PROJECT_MANAGER', subject: 'project')]
     public function createSprintForm(
         #[MapEntity(mapping: ['key' => 'key'])] Project $project
     ): Response {
@@ -66,7 +64,6 @@ class SprintController extends BaseController
     }
 
     #[Route('/create', name: 'create', methods: ['POST'])]
-    #[IsGranted('PROJECT_MANAGER', subject: 'project')]
     public function create(
         Request $request,
         #[MapEntity(mapping: ['key' => 'key'])] Project $project,
@@ -90,7 +87,6 @@ class SprintController extends BaseController
     }
 
     #[Route('/form/start/{id}', name: 'form_start', methods: ['GET'])]
-    #[IsGranted('PROJECT_MANAGER', subject: 'project')]
     public function formStart(
         #[MapEntity(mapping: ['key' => 'key'])] Project $project,
         Sprint $sprint
@@ -115,7 +111,6 @@ class SprintController extends BaseController
     }
 
     #[Route('/start/{id}', name: 'start', methods: ['POST'])]
-    #[IsGranted('PROJECT_MANAGER', subject: 'project')]
     public function start(
         Request $request,
         #[MapEntity(mapping: ['key' => 'key'])] Project $project,
@@ -152,7 +147,6 @@ class SprintController extends BaseController
     }
 
     #[Route('/form/complete/{id}', name: 'form_complete', methods: ['GET'])]
-    #[IsGranted('PROJECT_MANAGER', subject: 'project')]
     public function formComplete(
         #[MapEntity(mapping: ['key' => 'key'])] Project $project,
         Sprint $sprint
@@ -177,7 +171,6 @@ class SprintController extends BaseController
     }
 
     #[Route('/complete/{id}', name: 'complete', methods: ['POST'])]
-    #[IsGranted('PROJECT_MANAGER', subject: 'project')]
     public function complete(
         Request $request,
         #[MapEntity(mapping: ['key' => 'key'])] Project $project,
@@ -221,7 +214,6 @@ class SprintController extends BaseController
     }
 
     #[Route('/form/tickets/{id}', name: 'form_tickets', methods: ['GET'])]
-    #[IsGranted('PROJECT_MANAGER', subject: 'project')]
     public function formTickets(
         #[MapEntity(mapping: ['key' => 'key'])] Project $project,
         Sprint $sprint,
@@ -241,7 +233,6 @@ class SprintController extends BaseController
     }
 
     #[Route('/{id}/ticket/{ticket}/remove', name: 'ticket_remove', methods: ['POST'])]
-    #[IsGranted('PROJECT_MANAGER', subject: 'project')]
     public function removeTicket(
         Request $request,
         #[MapEntity(mapping: ['key' => 'key'])] Project $project,

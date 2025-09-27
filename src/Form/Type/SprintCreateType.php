@@ -3,7 +3,7 @@
 namespace App\Form\Type;
 
 use Symfony\Component\Form\AbstractType;
-use Symfony\Component\Form\Extension\Core\Type\DateTimeType;
+use Symfony\Component\Form\Extension\Core\Type\DateType;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\Form\FormError;
@@ -37,7 +37,7 @@ class SprintCreateType extends AbstractType
                 'empty_data' => '',
                 'constraints' => [new Assert\Length(max: 500)],
             ])
-            ->add('plannedStartAt', DateTimeType::class, [
+            ->add('plannedStartAt', DateType::class, [
                 'label' => 'Planned start',
                 'widget' => 'single_text',
                 'attr' => [
@@ -46,7 +46,7 @@ class SprintCreateType extends AbstractType
                 'input'  => 'datetime_immutable',
                 'constraints' => [new Assert\NotBlank()],
             ])
-            ->add('plannedEndAt', DateTimeType::class, [
+            ->add('plannedEndAt', DateType::class, [
                 'label' => 'Planned end',
                 'widget' => 'single_text',
                 'attr' => [

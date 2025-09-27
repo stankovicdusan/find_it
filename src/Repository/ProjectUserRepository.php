@@ -50,7 +50,9 @@ class ProjectUserRepository extends ServiceEntityRepository
             ->leftJoin('m.user','u')
             ->addSelect('u')
             ->andWhere('m.project = :project')
+            ->andWhere('m.status = :status')
             ->setParameter('project', $project)
+            ->setParameter('status', MemberStatusEnum::ACTIVE)
             ->orderBy('m.id','DESC');
 
         return $qb->getQuery()->getResult();

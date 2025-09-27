@@ -4,7 +4,6 @@ namespace App\Security\Voter;
 
 use App\Entity\Project;
 use App\Entity\ProjectUser;
-use App\Entity\Sprint;
 use App\Entity\User;
 use App\Enum\MemberStatusEnum;
 use App\Enum\RoleEnum;
@@ -24,7 +23,7 @@ final class ProjectVoter extends Voter
     protected function supports(string $attribute, mixed $subject): bool
     {
         return $subject instanceof Project
-            && in_array($attribute, [self::MEMBER, self::ADMIN, self::MANAGE_SETTINGS], true);
+            && in_array($attribute, [self::MEMBER, self::ADMIN, self::MANAGE_SETTINGS, self::MANAGER], true);
     }
 
     protected function voteOnAttribute(string $attribute, mixed $project, TokenInterface $token): bool
